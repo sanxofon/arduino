@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta charset="utf-8">
+	<title>Triángulo de Pascal | Santiago Chávez Novaro</title>
+	<meta name="description" content="Triángulo de Pascal - Javascript">
+	<meta name="author" content="Santiago Chávez Novaro">
+	<meta name="theme-color" content="#222222" />
+	    <meta name="apple-mobile-web-app-capable" content="yes" />
+	    <meta name="mobile-web-app-capable" content="yes">
+	    <meta name="application-name" content="Triángulo de Pascal">
+	    <meta name="apple-mobile-web-app-title" content="Triángulo de Pascal">
+	    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <style type="text/css">
+  body {
+  	background-color: #404040;
+  	margin: 0;
+  	padding: 0;
+  }
+  * {
+  	font-family: sans-serif;
+  	font-size: 1em;
+  }
+  h1 {
+  	margin:0;
+  	color:white;
+  	font-size: 2em;
+  }
+	.container{
+	  margin: 0 auto;
+	}
+	.divblock{
+	  text-align:center;
+	  vertical-align: middle;
+	}
+	#pascal{
+	  margin: 0 auto;
+	  text-align:center;
+	}
+	fieldset {
+		display: inline-block;
+	}
+	.botonera {
+		background-color: #ffe;
+	}
+	.configera {
+		background-color: #aaa;
+	}
+
+	.block{
+	  display: inline-block;
+	  text-align:center;
+	  font-size:0.9em;
+	  vertical-align: middle;
+
+	  /*background-color: #ccc;
+	  position:relative;
+	  border: 1px solid grey;
+	  width:4em;
+	  line-height: 1.6em;
+	  margin:2px;*/
+	}
+	.block:hover {
+		font-weight: bold;
+		background-color: #eee !important;
+	}
+
+	.hexagon {
+		position: relative;
+		width: 50px; 
+		line-height: 28.875px;
+		background-color: #ccc;
+		margin: 14.4375px 0 2px 2px;
+	}
+	.hexagon:before,
+	.hexagon:after {
+		content: "";
+		position: absolute;
+		width: 0;
+		left:0%;
+		border-left: 25px solid transparent;
+		border-right: 25px solid transparent;
+	}
+	.hexagon:before {
+		bottom: 100%;
+		border-bottom: 14.4375px solid #ccc;
+	}
+	.hexagon:after {
+		top: 100%;
+		width: 0;
+		border-top: 14.4375px solid #ccc;
+	}
+  </style>
+  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+</head>
+<body onload="printPascalTriangle()">
+	<div class="container">
+		<div align="center" style="background-color: #000;border-bottom: 1px solid #888;">
+			<h1>Triángulo de Pascal</h1>
+			<fieldset class="configera">
+			Núm Filas: 
+			<input type="number" min="0" size="4" step="1" placeholder="Número de filas para el Triángulo de Pascal" style="width:80px" id="numRows" value="21">
+			<input type="submit"" value="GENERAR" name="Go" onClick="printPascalTriangle()">
+			&nbsp;&nbsp;&nbsp;
+			Tiempo intervalo: <input type="number" min="0" max="10000" step="1" placeholder="Tiempo del intervalo de tiempo en milisegundos" style="width:80px" id="tim" value="1000"> <i>ms</i>
+			</fieldset><br>
+			<fieldset class="botonera">
+			<input type="button" style="width:80px;background-color: #ccc;" value="Vaciar" onclick="vaciar();">
+			<input type="button" style="width:80px;background-color: #404040;color:#ccc;" value="Negros" onclick="negros();">
+			<input type="button" style="width:120px;background-color: gold;" value="Construccion" onclick="construccion();">
+			<input type="button" style="width:120px;background-color: yellowgreen;" value="Simetría" onclick="simetria();">
+			<input type="button" style="width:120px;background-color: yellow;" value="Sierpinsky" onclick="sierpinsky();">
+			<input type="button" style="width:120px;background-color: DarkTurquoise;" value="Renglones" onclick="renglones();">
+			<input type="button" style="width:120px;background-color: #ffaa27;" value="Naturales" onclick="pintarFilas(1);">
+			<input type="button" style="width:120px;background-color: #ff4427;" value="Triangulares" onclick="pintarFilas(2);">
+			<input type="button" style="width:120px;background-color: #ff4427;" value="Cuadrangulares" onclick="pintarFilas(3);">
+			<input type="button" style="width:120px;background-color: yellowgreen;" value="Cuadrados" onclick="cuadrados();">
+			<input type="button" style="width:120px;background-color: cyan;" value="Potencias de 2 y 11" onclick="cuadrados();">
+			<input type="button" style="width:120px;background-color: LightPink;" value="Fibonacci" onclick="fibonacci();">
+			<input type="button" style="width:120px;background-color: MediumOrchid ;" value="Escaleras" onclick="escaleras();"><input type="number" min="1" max="32" id="escaleraInicio" style="width: 30px;"><input type="number" min="1" max="32" id="escaleraAvanzar" style="width: 30px;">
+			</fieldset>
+
+		</div>
+		<br><br>
+		<div id="pascal"></div>
+	</div>
+	<script type="text/javascript">
+
+	/////////////////////////////////////////////////////////////////////////////
+	// VARIABLES GLOBALES JAVASCRIPT -> modifica los valores en setDefaultVals //
+	/////////////////////////////////////////////////////////////////////////////
+	var gi=null,gf=null,gc=null,nr=null,tim=null,init=null;
+	//////////////////////////
+	function setDefaultVals() {
+		init = 0; 	// Está iniciado o no alguna animación
+		gi = 0; 		// Índice serial de la celdas
+		gf = 2;			// Índice filas de la celdas
+		gc = 0; 		// índice columnas x fila de las celdas
+		nr = document.getElementById('numRows').value; 	// Número de filas en el triángulo de pascal
+		tim = document.getElementById('tim').value;		// Tiempo de duración del intervalo de tiempo
+	}
+	setDefaultVals();
+	/////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////
+
+	function pad(num, size) {
+		var s = num+"";
+		while (s.length < size) s = "0" + s;
+		return s;
+	}
+
+	function printPascalTriangle() {
+		setDefaultVals();
+		document.getElementById("pascal").innerHTML = "";
+		var arr = generatePascal(+nr);
+		var k = 1;
+		// for(var i=0;i<arr.length;i++) {
+		for(var i=arr.length-1;i>=0;i--) {
+			var div = document.createElement('div');
+			div.className ="divblock";
+			for(var j=0;j<arr[i].length;j++) {
+				var span = document.createElement('span');
+				span.innerHTML=arr[i][j];
+				span.className ="hexagon block celda-"+i+"-"+j; //+" serie-"+k;
+				div.appendChild(span);
+				k++;
+			}
+			document.getElementById("pascal").appendChild(div);
+		}
+	}
+
+	function generatePascal(n) {
+		var arr = [];
+		var tmp;
+		for(var i=0;i<n;i++) {
+			arr[i]=[];
+			for(var j=0; j<=i; j++) {
+				if(j==i) {
+					arr[i].push(1);
+				}else{
+					tmp = (!!arr[i-1][j-1]?arr[i-1][j-1]:0)+(!!arr[i-1][j]?arr[i-1][j]:0);
+					arr[i].push(tmp);
+				}
+			}
+		}
+		return arr;
+	}
+
+	function vaciar() {
+		setDefaultVals();
+		$( ".block" ).each(function() {
+			$(this).css('background-color','#ccc');
+		});
+	}
+
+	function negros() {
+		setDefaultVals();
+		$( ".block" ).each(function() {
+			$(this).css('background-color','#444');
+		});
+	}
+
+	function sierpinsky() {
+		vaciar();
+		$( ".block" ).each(function() {
+			if ($( this ).html()/2==Math.floor($( this ).html()/2)) {
+				$(this).css('background-color','yellow');
+			} else {
+				$(this).css('background-color','blue');
+			}
+		})
+	}
+
+	function renglones() {
+		vaciar();
+		for (var c = 0; c < $('#numRows').val(); c++) {
+			var color = 'rgb('+Math.floor((Math.random() * 255) + 1)+','+Math.floor((Math.random() * 255) + 1)+','+Math.floor((Math.random() * 255) + 1)+')';
+			$("[class*=celda-"+c+"-]").each(function() {
+				$(this).css('background-color',color);
+			});
+		}
+	}
+
+	function filas(n,colr='red') {
+		$(".block").each(function() {
+			var x = $(this).attr('class');
+			x = x.split('-');
+			var f = x[1];
+			var c = x[2];
+			if (c==n || c==f-n) {
+				pintar(f,c,colr);
+			}
+		});
+	}
+
+	function pintar(f,c,colr='red',apagar='') {
+		$('.celda-'+f+'-'+c).css('background-color',colr);
+		if (apagar!='') setTimeout("apagar("+f+","+c+","+apagar+");",tim);
+	}
+
+	function apagar(f,c,colr='#444') {
+		$('.celda-'+f+'-'+c).css('background-color',colr);
+	}
+
+	function repetirCuadrados() {
+		if (init<=0) return;
+		var p = [gf-1,gc];
+		var m = [gf,gc+1];
+		var h = [gf-1,gc+1];
+		console.log(gf,gc);
+
+		pintar(p[0],p[1],'green');
+		pintar(m[0],m[1],'green');
+		pintar(h[0],h[1],'red');
+
+		if (gf<=5) var tom = tim;
+		else var tom = Math.floor(tim/Math.pow((gf-5),1.1));
+		if (gc==1) setTimeout("apagar("+p[0]+","+p[1]+",'orange');apagar("+m[0]+","+m[1]+",'orange');apagar("+h[0]+","+h[1]+",'yellow');",tom);
+		else setTimeout("apagar("+p[0]+","+p[1]+",'orange');apagar("+m[0]+","+m[1]+",'orange');apagar("+h[0]+","+h[1]+");",tom);
+
+		gc++;
+		gf++;
+		if (init>0 && gf<nr) setTimeout('repetirCuadrados();',tom);
+	}
+
+	function cuadrados() {
+		negros();
+		filas(2,'gold');
+		init=1;
+		gf = 3;
+		gc = 0;
+		repetirCuadrados();
+	}
+
+	function repetirFilas() {
+		if (init<=0) return;
+		var p = [gf-1,gc];
+		var m = [gf,gc+1];
+		// var h = [gf-1,gc+1];
+		console.log(gf,gc);
+
+		pintar(p[0],p[1],'red');
+		pintar(m[0],m[1],'red');
+		// pintar(h[0],h[1],'red');
+
+		if (gf<=5) var tom = tim;
+		else var tom = Math.floor(tim/Math.pow((gf-5),1.1));
+
+		// setTimeout("apagar("+p[0]+","+p[1]+",'orange');apagar("+m[0]+","+m[1]+",'orange');apagar("+h[0]+","+h[1]+");",tom);
+
+		gc++;
+		gf++;
+		if (init>0 && gf<nr) setTimeout('repetirFilas();',tom);
+	}
+
+	function pintarFilas(fila) {
+		vaciar();
+		filas(fila,'orange');
+		init=1;
+		gf = fila+1;
+		gc = 0;
+		repetirFilas();
+	}
+
+	function cuadradosOLD() {
+		var ii=0,a = [];
+		var columna = 1; // en la primera columna cuadrados 1^2, 2^2, 3^2, 4^2...
+		for (var i = 0; i < lista.length; i++) {
+			f = lista[i][0];
+			c = lista[i][1];
+			if (c==f-columna) {
+				pintar(f,c,'red');
+				/////////////////////////////////
+
+				if (ii>0) {
+					// pintar(a[0],a[1],'blue');
+					// pintar(f,c,'blue');
+					setTimeout("pintar("+f+","+c+",'green');pintar("+a[0]+","+a[1]+",'green');setTimeout('pintar("+a[0]+","+a[1]+",\\'red\\');',"+tim+");",ii*tim);
+				}
+				a = [f,c];
+				ii++;
+				
+				/////////////////////////////////
+			}
+		}
+		setTimeout("pintar("+a[0]+","+a[1]+",'red');",ii*tim);
+	}
+
+	function crearLista() {
+
+		var lista = [];
+		$(".block").each(function() {
+			var x = $(this).attr('class');
+			x = x.split('-');
+			var f = x[1];
+			var c = x[2];
+			lista.push([f,c]);
+		});
+		lista = lista.reverse();
+
+		matriz = [];
+		j=0;
+		for (var i = 0; i < nr; i++) {
+			matriz.push([]);
+			for (var ii = 0; ii <= i; ii++) {
+				matriz[i].push(lista[j]);
+				j++;
+			}
+		}
+		return matriz;
+	}
+
+	function repetirConstruccion() {
+		if (init<=0) return;
+		var p = [gf-1,gc];
+		var m = [gf-1,gc+1];
+		var h = [gf,gc+1];
+
+		pintar(p[0],p[1],'green');
+		pintar(m[0],m[1],'green');
+		pintar(h[0],h[1],'orange');
+
+		if (gf<=5) var tom = tim;
+		else var tom = Math.floor(tim/Math.pow((gf-5),1.5));
+
+		setTimeout("apagar("+p[0]+","+p[1]+",'#ccc');pintar("+h[0]+","+h[1]+",'gold');",tom);
+
+		gc++;
+		if (gc>=gf-1) {
+			setTimeout("apagar("+m[0]+","+m[1]+",'#ccc');",tom);
+			gc=0;
+			gf++;
+			if (gf>=nr) {
+				setTimeout('vaciar();',tom);
+			}
+		}
+		if (init>0 && gf<nr) setTimeout('repetirConstruccion();',tom);
+	}
+
+	function construccion() {
+		negros();
+		filas(0,'gold');
+		init=1;
+		apagar(0,0,'#ccc');
+		repetirConstruccion();
+	}
+
+	/*function construccionOLD() {
+		negros();
+		filas(0,'gold');
+		var ii = 0;
+		setTimeout("pintar(0,0,'#ccc');",tim);
+		for (var f = 2; f < nr; f++) {
+			for (var c = 0; c < f-1; c++) {
+				var p = [f-1,c];
+				var m = [f-1,c+1];
+				var h = [f,c+1];
+				setTimeout("pintar("+p[0]+","+p[1]+",'green');pintar("+m[0]+","+m[1]+",'green');pintar("+h[0]+","+h[1]+",'orange');setTimeout('pintar("+p[0]+","+p[1]+",\\'#ccc\\');pintar("+h[0]+","+h[1]+",\\'gold\\');',"+tim+");",ii*tim);
+				ii++;
+			}
+			setTimeout("setTimeout('pintar("+m[0]+","+m[1]+",\\'#ccc\\');',"+tim+");",(ii-1)*tim);
+		}
+	}*/
+
+	</script>
+</body>
+</html>
