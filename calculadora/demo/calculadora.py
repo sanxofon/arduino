@@ -2,8 +2,8 @@
 from __future__ import division
 
 from decimal import *
-import readchar
-import os,sys
+# import readchar
+# import os,sys
 from Tkinter import Tk, Label, Canvas, StringVar
 from numericStringParser import *
 """____________________________________________
@@ -26,21 +26,21 @@ from numericStringParser import *
 class calculadora(object):
     def __init__(self, master):
         self.master = master
-        fullscreen = 0
+        fullscreen = 1
         if fullscreen>0:
             # Full screen
-            master.overrideredirect(True)
-            master.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
-            master.focus_set()  # <-- move focus to this widget
+            # master.overrideredirect(True)
+            # master.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
+            # master.focus_set()  # <-- move focus to this widget
             # Otra opción
-            # master.attributes('-fullscreen', True)
+            master.attributes('-fullscreen', True)
         else:
             # master.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth()-16, root.winfo_screenheight()-80))
             master.geometry("%dx%d+0+0" % (master.winfo_screenwidth()-16, master.winfo_screenheight()-80))
 
         master.title("Calculadora")
 
-        master.bind("<Escape>", lambda e: e.widget.quit()) # Python 2
+        # master.bind("<Escape>", lambda e: e.widget.quit()) # Python 2
         master.bind("<Key>", self.recibeChar)
 
         self.dondestoy = 'p'
@@ -167,61 +167,63 @@ class calculadora(object):
         else:
             cadena = p
         # SALIDAS
-        if k == 67: # c
+        if c == 'c': # c
             # reiniciar programa
             self.calculadora('REINICIAR', '', p, q)
             return
             # return '','REINICIAR'
-        elif k == 75: # k
+        elif c == 'k' or k == 9: # k
             # salir del programa
             self.calculadora('SALIR', '', p, q)
             return
             # return '','SALIR'
 
         # IGUAL A
-        elif k==10 or k==13:# or k==61: # [ENTER] o [=] > Salto de línea o igual: '\n' ó '\r' ó '='
+        elif k==21 or k==125 or k==36: # [ENTER] o [=] > Salto de línea o igual: '\n' ó '\r' ó '='
+        # elif k==10 or k==13:# or k==61: # [ENTER] o [=] > Salto de línea o igual: '\n' ó '\r' ó '='
             # imprimir cadena RESULTADO
             self.calculadora('RESULTADO', cadena, p, q)
             return
             # return cadena,'RESULTADO'
 
         # ESCRITURA NORMAL
-        elif k == 8: # BACKSPACE
+        elif k == 22: # BACKSPACE
+        # elif k == 8: # BACKSPACE
             # recortar cadena un digito
             if (len(cadena)>=1):
                 cadena = cadena[:-1]
-        elif (k>=48 and k<=57) or (k>=96 and k<=105): # NUMEROS 0-9
+        elif (k>=10 and k<=19) or (k>=79 and k<=90): # NUMEROS 0-9
+        # elif (k>=48 and k<=57) or (k>=96 and k<=105): # NUMEROS 0-9
             # incrementa la cadena con c
             cadena = cadena+str(c)
-        elif k==188 or k==190: # NUMEROS 0-9, COMA o PUNTO
-            if k==188 or k==190:
-                c='.' # Siempre usa punto
+        elif k==59 or k==60 or k==91: # COMA o PUNTO
+            c='.' # Siempre usa punto
             # incrementa la cadena con c
             cadena = cadena+str(c)
 
         # NUMEROS ESPECIALES e y pi
-        elif (k==69):    # e => 101
+        elif (c=='e'):    # e => 101
             # Euler's number => 'e'
             c = 'E'
             # incrementa la cadena con c
             cadena = cadena+str(c)
-        elif (k==72):    # h => 104
+        elif (c=='h'):    # h => 104
             # PI => 'h'
             c = 'PI'
             # incrementa la cadena con c
             cadena = cadena+str(c)
         
         # OPERACIONES SIMPLES: * + - /
-        elif (k==106 or k==186): # * => 42
+        elif (c=='*'): # * => 42
             # incrementa la cadena con c
             cadena = cadena+str(c)
-        elif (k==107 or k==187):    # + => 43
+        elif (c=='+'):    # + => 43
             # incrementa la cadena con c
             cadena = cadena+str(c)
-        elif (k==109 or k==189):    # - => 45
+        elif (c=='-'):    # - => 45
             # incrementa la cadena con c
             cadena = cadena+str(c)
-        elif (k==111 or k==191):    # / => 47
+        elif (c=='/'):    # / => 47
             # OPCION 1: incrementa la cadena con c ???
             # cadena = cadena+c
             # OPCION 2: Debe enviar al valor q sólo si no estamos ahí !!!???
@@ -231,13 +233,13 @@ class calculadora(object):
                 # return cadena, 'SETQ'
 
         # DENOMINADORES P, Q
-        elif (k==80):    # p => 112
+        elif (c=='p'):    # p => 112
             # Debe enviar al valor p sólo si no estamos ahí
             if (self.dondestoy!='p'):
                 self.calculadora('SETP', cadena, p, q)
                 return
                 # return cadena, 'SETP'
-        elif (k==81):    # q => 113
+        elif (c=='q'):    # q => 113
             # Debe enviar al valor q sólo si no estamos ahí
             if (self.dondestoy!='q'):
                 self.calculadora('SETQ', cadena, p, q)
