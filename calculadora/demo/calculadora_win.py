@@ -327,8 +327,8 @@ class calculadora(object):
         ################################################
         # Calcula p y q numericamente a floats
         nsp = NumericStringParser()
-        fp = int(nsp.eval(p))
-        fq = int(nsp.eval(q))
+        fp = float(nsp.eval(p))
+        fq = float(nsp.eval(q))
         # fp = Decimal(p)
         # fq = Decimal(q)
         # print fp,fq
