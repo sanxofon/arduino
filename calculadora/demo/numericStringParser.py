@@ -80,20 +80,28 @@ class NumericStringParser(object):
     def evaluateStack(self, s):
         op = s.pop()
         if op == 'unary -':
+            print "X1\n"
             return -self.evaluateStack(s)
         if op in "+-*/^":
             op2 = self.evaluateStack(s)
             op1 = self.evaluateStack(s)
+            print "X2\n"
             return self.opn[op](op1, op2)
         elif op == "PI":
+            print "X3\n"
             return math.pi  # 3.1415926535
         elif op == "E":
+            print "X4\n"
             return math.e  # 2.718281828
         elif op in self.fn:
+            print "X5\n"
             return self.fn[op](self.evaluateStack(s))
         elif op[0].isalpha():
+            print "X6\n"
             return 0
         else:
+            print "X7\n"
+            # return '{:.20f}'.format(float(op))
             return float(op)
 
     def eval(self, num_string, parseAll=True):

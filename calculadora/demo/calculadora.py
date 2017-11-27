@@ -162,8 +162,8 @@ class calculadora(object):
         # return
         if (self.dondestoy=='q'):
             cadena = q
-            if cadena=='1':
-                cadena = ''
+            # if cadena=='1':
+            #     cadena = ''
         else:
             cadena = p
         # SALIDAS
@@ -250,8 +250,8 @@ class calculadora(object):
             p = cadena
         if (self.dondestoy=='q'):
             q = cadena
-        if (q==''):
-            q = '1'
+        # if (q==''):
+        #     q = '1'
         self.operacion(p,q)
     
     def pausa(self, ):

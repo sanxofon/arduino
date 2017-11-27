@@ -1,11 +1,13 @@
 # coding: utf-8
 from __future__ import division
+from __future__ import print_function
 
 from decimal import *
 import readchar
 import os,sys
 from Tkinter import Tk, Label, Canvas, StringVar
 from numericStringParser import *
+from primefac import *
 """____________________________________________
 |                                              |
 |  TECLAS ACEPTADAS:                           |
@@ -65,13 +67,13 @@ class calculadora(object):
         self.resultastr = ""
         self.resulta = StringVar()
         self.resulta.set(self.resultastr)
-        self.labelr = Label(master, textvariable=self.resulta, bg="#eee", width=42, justify="center", font=("Roboto", 48))
+        self.labelr = Label(master, textvariable=self.resulta, bg="#eee", width=80, justify="left", font=("Roboto", 16))
 
         # Posiciona
         self.line.place(relx=0, rely=.495)
         self.labelp.place(relx=0, rely=.32)
         self.labelq.place(relx=0, rely=.545)
-        self.labelr.place(relx=0, rely=.8)
+        self.labelr.place(relx=0, rely=.73)
 
         #######################################
 
@@ -88,6 +90,7 @@ class calculadora(object):
         tmp = 0
         it = 0
         while p <= a:
+            # print(("primed:",p,a),"\r")
             if a % p == 0:
                 tmp = 1
                 expo += 1
@@ -124,7 +127,6 @@ class calculadora(object):
 
 
     # Aqui determina el periodo del denominador, si no tiene factores de 5 o de 2
-
     def mpl(self, q):
         if q%5 == 0 or q%2==0:
             return -1
@@ -162,8 +164,8 @@ class calculadora(object):
         # return
         if (self.dondestoy=='q'):
             cadena = q
-            if cadena=='1':
-                cadena = ''
+            # if cadena=='1':
+            #     cadena = ''
         else:
             cadena = p
         # SALIDAS
@@ -248,8 +250,8 @@ class calculadora(object):
             p = cadena
         if (self.dondestoy=='q'):
             q = cadena
-        if (q==''):
-            q = '1'
+        # if (q==''):
+        #     q = '1'
         self.operacion(p,q)
     
     def pausa(self, ):
@@ -327,17 +329,27 @@ class calculadora(object):
         nsp = NumericStringParser()
         fp = int(nsp.eval(p))
         fq = int(nsp.eval(q))
+        # fp = Decimal(p)
+        # fq = Decimal(q)
+        # print fp,fq
 
         ################################################
         ####### AQUÍ VAN LOS CALCULOS DE PERIODO #######
 
         PL = self.Periodo(fq)
+        # prec = (PL[0]+2)*(PL[1]+5)
+
+        # self.resultastr = str(",".join([str(x) for x in PL]))
+        # self.resulta.set(self.resultastr)
+        # return
+
         prec = (PL[0]+2)*(PL[1]+5)
         getcontext().prec = prec
 
+        # res = fp/fq
         res = Decimal(fp)/Decimal(fq)
-        self.resultastr = str(res)
-        self.resulta.set(self.resultastr)
+        # self.resultastr = str(res)
+        # self.resulta.set(self.resultastr)
 
         nrp, pl = PL[0], PL[1]
         cad = str(res).split('.')
@@ -350,12 +362,16 @@ class calculadora(object):
             cad = ''
             repite = ''
 
+
+        salida = ''
         # # IMPRIME LOS DETALLES DEL PERIODO
-        # print 'LONGITUD DEL PERIODO: '+str(PL[1])
-        # print 'PERIODO: '+str(repite)
-        # print 'ANTES DEL PERIODO: '+precad+'. '+str(cad[0:nrp-1])
-        # print 'PRECISION: '+str(prec)
-        # print 'RESULTADO: '+str(res)
+        salida = salida+ 'LONGITUD DEL PERIODO: '+str(PL[1])
+        salida = salida+ '\nPERIODO: '+str(repite)
+        salida = salida+ '\nANTES DEL PERIODO: '+precad+'. '+str(cad[0:nrp-1])
+        salida = salida+ '\nPRECISION: '+str(prec)
+        salida = salida+ '\nRESULTADO: '+str(res)
+        self.resultastr = str(salida)
+        self.resulta.set(self.resultastr)
 
 root = Tk()
 calc = calculadora(root);
