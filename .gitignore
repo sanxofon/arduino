@@ -6,3 +6,9 @@ universum_aubin\.zip
 picumple\.comprimido
 
 *.pyc
+
+*.mscx,
+
+*.mscx
+
+*.mscz,
