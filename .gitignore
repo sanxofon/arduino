@@ -7,8 +7,16 @@ picumple\.comprimido
 
 *.pyc
 
+<<<<<<< HEAD
 *.mscx,
 
 *.mscx
 
 *.mscz,
+=======
+matemusicas/mananitas\.mid
+
+*.RPP
+
+*.RPP-bak
+>>>>>>> master
