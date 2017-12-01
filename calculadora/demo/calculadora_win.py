@@ -14,15 +14,16 @@ from primefac import *
 |        0-9  => Numeros                       |
 |          e  => Euler                         |
 |          h  => Pi                            |
+|          f  => Phi                           |
 |          *  => Multiplicar                   |
 |          +  => Sumar                         |
 |          -  => Restar                        |
-|          /  => Dividir (Establecer divisor)  |
+|          r  => Raiz cuadrada                 |
 |          p  => Establecer dividendo          |
-|          q  => Establecer divisor            |
-| [ENTER] ó = => Igual a                       |
+|          q  => Establecer divisor (dividir)  |
+|     [ENTER] => Igual a                       |
 |           c => Reiniciar                     |
-|   [ESC] ó k => Salir del programa            |
+|           k => Salir del programa            |
 |____________________________________________"""
 
 class calculadora(object):
