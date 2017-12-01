@@ -8,28 +8,39 @@ import os,sys
 from Tkinter import Tk, Label, Canvas, StringVar
 from numericStringParser import *
 from primefac import *
+
 """____________________________________________
 |                                              |
 |  TECLAS ACEPTADAS:                           |
-|        0-9  => Numeros                       |
-|          e  => Euler                         |
-|          h  => Pi                            |
-|          f  => Phi                           |
-|          *  => Multiplicar                   |
-|          +  => Sumar                         |
-|          -  => Restar                        |
-|          r  => Raiz cuadrada                 |
-|          p  => Establecer dividendo          |
-|          q  => Establecer divisor (dividir)  |
-|     [ENTER] => Igual a                       |
-|           c => Reiniciar                     |
-|           k => Salir del programa            |
+|     0-9  => Numeros                          |
+|       e  => Euler                            |
+|       h  => Pi (π)                           |
+|       f  => Phi (φ)                          |
+|       *  => Multiplicar                      |
+|       +  => Sumar                            |
+|       -  => Restar                           |
+|       r  => Raiz cuadrada                    |
+|       p  => Establecer dividendo             |
+|       q  => Establecer divisor (dividir)     |
+|  [ENTER] => Igual a                          |
+|        c => Reiniciar                        |
+|        -----------------------               |
+|        a => Avanzar (enviar a Arduino)       |
+|        s => Stop (pausar envio a Arduino)    |
+|        -----------------------               |
+|        k => Salir del programa (oculto)      |
 |____________________________________________"""
+
+"""
+    ToDo:
+        - Alcarar el 1 del divisor cuando aún no se ha seteado
+"""
 
 class calculadora(object):
     def __init__(self, master):
         self.master = master
-        fullscreen = 0
+        fullscreen = 1
+        ultrawidescreen = 0
         if fullscreen>0:
             # Full screen
             master.overrideredirect(True)
@@ -52,7 +63,12 @@ class calculadora(object):
         self.dividendostr = ""
         self.dividendo = StringVar()
         self.dividendo.set(self.dividendostr)
-        self.labelp = Label(master, textvariable=self.dividendo, bg="#fd0", width=21, justify="center", font=("Roboto", 96))
+        if ultrawidescreen>0:
+            # UltraWide Screen
+            self.labelp = Label(master, textvariable=self.dividendo, bg="#fd0", width=18, justify="center", font=("Roboto", 192))
+        else:
+            # 16:9 Screen
+            self.labelp = Label(master, textvariable=self.dividendo, bg="#fd0", width=21, justify="center", font=("Roboto", 96))
 
         self.line = Canvas(master, width=master.winfo_screenwidth(), height=50)
         # self.line.create_rectangle(0, 0, master.winfo_screenwidth(), 20, outline="#000", fill="#000")
@@ -62,19 +78,29 @@ class calculadora(object):
         self.divisorstr = "1"
         self.divisor = StringVar()
         self.divisor.set(self.divisorstr)
-        self.labelq = Label(master, textvariable=self.divisor, bg="#eee", width=21, justify="center", font=("Roboto", 96))
+        if ultrawidescreen>0:
+            # UltraWide Screen
+            self.labelq = Label(master, textvariable=self.divisor, bg="#eee", width=18, justify="center", font=("Roboto", 192))
+        else:
+            # 16:9 Screen
+            self.labelq = Label(master, textvariable=self.divisor, bg="#eee", width=21, justify="center", font=("Roboto", 96))
 
         # Resultado res
         self.resultastr = ""
         self.resulta = StringVar()
         self.resulta.set(self.resultastr)
-        self.labelr = Label(master, textvariable=self.resulta, bg="#eee", width=80, justify="left", font=("Roboto", 16))
+        if ultrawidescreen>0:
+            # UltraWide Screen
+            self.labelr = Label(master, textvariable=self.resulta, bg="#eee", width=213, justify="left", font=("Roboto", 16))
+        else:
+            # 16:9 Screen
+            self.labelr = Label(master, textvariable=self.resulta, bg="#eee", width=80, justify="left", font=("Roboto", 16))
 
         # Posiciona
         self.line.place(relx=0, rely=.495)
-        self.labelp.place(relx=0, rely=.32)
+        self.labelp.place(relx=0, rely=.22)
         self.labelq.place(relx=0, rely=.545)
-        self.labelr.place(relx=0, rely=.73)
+        self.labelr.place(relx=0, rely=.80)
 
         #######################################
 
@@ -205,12 +231,17 @@ class calculadora(object):
         # NUMEROS ESPECIALES e y pi
         elif (k==69):    # e => 101
             # Euler's number => 'e'
-            c = 'E'
+            c = 'e'
             # incrementa la cadena con c
             cadena = cadena+str(c)
         elif (k==72):    # h => 104
             # PI => 'h'
-            c = 'PI'
+            c = 'π'
+            # incrementa la cadena con c
+            cadena = cadena+str(c)
+        elif (k==70):    # f => 104
+            # PI => 'h'
+            c = 'φ'
             # incrementa la cadena con c
             cadena = cadena+str(c)
         
@@ -328,8 +359,18 @@ class calculadora(object):
         ################################################
         # Calcula p y q numericamente a floats
         nsp = NumericStringParser()
-        fp = float(nsp.eval(p))
-        fq = float(nsp.eval(q))
+        nspep = nsp.eval(p)
+        nspeq = nsp.eval(q)
+        print("p:", nspep)
+        print("q:", nspeq)
+        if isinstance(nspep, tuple):
+            nspep = nspep[1]
+        if isinstance(nspeq, tuple):
+            nspeq = nspeq[1]
+        print("p:", nspep)
+        print("q:", nspeq)
+        fp = float(nspep)
+        fq = float(nspeq)
         # fp = Decimal(p)
         # fq = Decimal(q)
         # print fp,fq
