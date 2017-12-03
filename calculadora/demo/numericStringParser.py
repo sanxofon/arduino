@@ -1,13 +1,14 @@
 # coding: utf-8
+# Author Santiago Chávez Novaro
 from pyparsing import (Literal, CaselessLiteral, Word, Combine, Group, Optional,
                        ZeroOrMore, Forward, nums, alphas, oneOf)
 import operator,math
-from scipy import constants
-class NumericStringParser(object):
-    '''
-    Most of this code comes from the fourFn.py pyparsing example
+# from scipy import constants
+import re
+import mpmath as mp
+mp.mp.dps = 10000 # max: 100,000
 
-    '''
+class NumericStringParser(object):
 
     def pushFirst(self, strg, loc, toks):
         self.exprStack.append(toks[0])
@@ -65,15 +66,16 @@ class NumericStringParser(object):
         self.bnf = expr
         # map operator symbols to corresponding arithmetic operations
         epsilon = 1e-12
-        self.opn = {"+": operator.add,
-                    "-": operator.sub,
-                    "*": operator.mul,
-                    "/": operator.truediv,
-                    "^": operator.pow}
-        self.fn = {"sin": math.sin,
-                   "cos": math.cos,
-                   "tan": math.tan,
-                   "exp": math.exp,
+        self.opn = {"+": mp.mp.fadd,
+                    "-": mp.mp.fsub,
+                    "*": mp.mp.fmul,
+                    "/": mp.mp.fdiv,
+                    "^": mp.power}
+        self.fn = {"sqrt": mp.sqrt,
+                   "sin": mp.sin,
+                   "cos": mp.cos,
+                   "tan": mp.tan,
+                   "exp": mp.exp,
                    "abs": abs,
                    "trunc": lambda a: int(a),
                    "round": round,
@@ -88,29 +90,29 @@ class NumericStringParser(object):
             op2 = self.evaluateStack(s)
             op1 = self.evaluateStack(s)
             # print "X2\n"
-            print "op1:",type(op1),op1
-            print "op2:",type(op2),op2
+            # print "op1:",type(op1),op1
+            # print "op2:",type(op2),op2
             # HACK
             if isinstance(op1, tuple):
                 op1 = op1[1]
             if isinstance(op2, tuple):
                 op2 = op2[1]
-            print "op1:",type(op1),op1
-            print "op2:",type(op2),op2
+            # print "op1:",type(op1),op1
+            # print "op2:",type(op2),op2
 
             return self.opn[op](op1, op2)
         elif op == "PI":
             # print "X3\n"
-            print math.pi
-            return "PI:", math.pi  # 3.1415926535...
+            # print math.pi
+            return "PI:", mp.pi  # 3.1415926535...
         elif op == "E":
             # print "X4\n"
-            print math.e
-            return "E:", math.e  # 2.718281828...
+            # print math.e
+            return "E:", mp.e  # 2.718281828...
         elif op == "PH":
             # print "X5\n"
-            print "PH:", constants.golden
-            return constants.golden  # 1.61803398875...
+            # print "PH:", mp.phi
+            return mp.phi  # 1.61803398875...
         elif op in self.fn:
             # print "X6\n"
             return self.fn[op](self.evaluateStack(s))
@@ -123,7 +125,8 @@ class NumericStringParser(object):
             return float(op)
 
     def eval(self, num_string, parseAll=True):
-        num_string = num_string.replace('e','E').replace('π','PI').replace('φ','PH')
+        num_string = num_string.replace('×','*').replace('e','E').replace('π','PI').replace('φ','PH')
+        num_string = re.sub(r'√([^/]+)','sqrt(\\1)',num_string)
         self.exprStack = []
         results = self.bnf.parseString(num_string, parseAll)
         val = self.evaluateStack(self.exprStack[:])
