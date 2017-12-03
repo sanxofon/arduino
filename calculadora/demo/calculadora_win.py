@@ -6,6 +6,7 @@ from __future__ import division
 # from decimal import *
 # import readchar
 import os,sys
+import serial
 from Tkinter import Tk, Label, Canvas, StringVar
 from numericStringParser import *
 # from primefac import *
@@ -45,20 +46,41 @@ def current_iso8601():
         ✓ Alcarar el 1 del divisor cuando aún no se ha seteado
         ✓ Modificar el signo de * por el de × (U+00D7 => c3 97  MULTIPLICATION SIGN) en la vista (similar a PI=>π)
         ✓ Definir presición mínima para operaciones y constantes
-        - Implementar "avanzar" (a) y "stop" (s) y el envío de caracteres por el serial uno por uno con timer
+        ✓ Implementar "avanzar" (a) y "stop" (s) y el envío de caracteres por el serial uno por uno con timer
         ✓ En el envío de números (uno por uno a arduino) debe de cambiarse el número que 
             tenga el punto decimal a la derecha, por la letra mayúscula que corresponda:
             A=1, B=2, C=3, D=4, E=5, F=6, G=7, H=8, I=9, J=0
+        ✓ Generar 0's infinitos para números enteros
+        - DEBUG ARDUINO: Caso número negativo en resultado debe existir signo de menos en arduino !!!
 """
 class calculadora(object):
     def __init__(self, master):
 
+        ######### VARIABLES ADMIN #############
+
+
+        # Velocidad (lista de velocidades en milisegundos)
+        self.velist = [3000,2000,1750,1500,1250,1000,750,500,300,200,150,100,80,60,40,20,10]
+
+        # Debug
+        self.debuguear = 0
+        self.porcionlen = 70 # Porcion a mostrar
+        
+        # Display out to Arduino (on/off)
+        self.sendToDisplay = 1
+
+        #Arduino COMM (Display)
+        if self.sendToDisplay>0:
+            arduino = serial.Serial('COM3', 9600, timeout=.1) # debe coincidir con los baudios y el puerto arduino
+            time.sleep(0.1)
+
+        #######################################
         ######### VARIABLES GENERALES #########
-        # nsp class general
+
+        # nsp class
         self.nsp = NumericStringParser()
 
-        # Velocidad
-        self.velist = [3000,2000,1750,1500,1250,1000,750,500,300,200,150,100,80,60,40,20,10]
+        # Vel sets
         self.velmax = len(self.velist)-1
         self.vel = -1
 
@@ -69,6 +91,7 @@ class calculadora(object):
         # SCREEN
         fullscreen = 0
         ultrawidescreen = 0
+
         #######################################
 
         self.master = master
@@ -493,16 +516,23 @@ class calculadora(object):
             enviar = '0'
         else:
             enviar = self.resultadoAduino[self.contador]
-        salida = "Velocidad: "+str(self.velist[self.vel])+" ms"
-        salida = salida+u"\nPosición: "+str(self.contador)
-        salida = salida+u"\nDígito: "+enviar
-        inicio = self.contador-30
-        if inicio<0:
-            inicio=0
-        salida = salida+u"\nPorción: "+self.resultadoAduino[inicio:self.contador]
-        self.resultastr = salida
-        self.resulta.set(self.resultastr)
-        print(current_iso8601(),self.contador,self.vel,self.velist[self.vel],enviar)
+
+        if self.debuguear>0:
+            salida = "Velocidad: "+str(self.velist[self.vel])+" ms"
+            salida = salida+u"\nPosición: "+str(self.contador)
+            salida = salida+u"\nDígito: "+enviar
+            inicio = self.contador-self.porcionlen
+            if inicio<0:
+                inicio=0
+            salida = salida+u"\nPorción: "+self.resultadoAduino[inicio:self.contador+1].rjust(self.porcionlen, ' ').replace(' ','  ')
+            self.resultastr = salida
+            self.resulta.set(self.resultastr)
+        # ENVIO A DISPLAY
+        if self.sendToDisplay>0:
+            arduino.write(enviar) # Envia digito actual a DISPLAY, la pausa la genera el unUpdate mismo
+        # DEBUG EN CONSOLA
+        if self.debuguear>0:
+            print(current_iso8601(),self.contador,self.vel,self.velist[self.vel],enviar)
         # schedule timer para ayutollamarse cada segundo
         if self.vel>=0:
             self.master.after(self.velist[self.vel], self.onUpdate)
