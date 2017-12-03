@@ -360,6 +360,16 @@ class calculadora(object):
                 else:
                     p=p+')'
 
+            rcadena = q[::-1]
+            if '(' in rcadena:
+                if ')' in rcadena:
+                    ax = rcadena.index('(')
+                    cx = rcadena.index(')')
+                    if ax<cx:
+                        q=q+')'
+                else:
+                    q=q+')'
+
             self.resultado(p,q)
 
         if (estado=='REINICIAR'):

@@ -6,7 +6,7 @@ import operator,math
 # from scipy import constants
 import re
 import mpmath as mp
-mp.mp.dps = 10000 # max: 100,000
+mp.mp.dps = 30000 # max: 100,000
 
 class NumericStringParser(object):
 
