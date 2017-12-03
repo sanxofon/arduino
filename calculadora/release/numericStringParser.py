@@ -104,11 +104,11 @@ class NumericStringParser(object):
         elif op == "PI":
             # print "X3\n"
             # print math.pi
-            return "PI:", mp.pi  # 3.1415926535...
+            return mp.pi  # 3.1415926535...
         elif op == "E":
             # print "X4\n"
             # print math.e
-            return "E:", mp.e  # 2.718281828...
+            return mp.e  # 2.718281828...
         elif op == "PH":
             # print "X5\n"
             # print "PH:", mp.phi
