@@ -440,8 +440,6 @@ class calculadora(object):
 
         ################################################
         # Calcula p y q numericamente a floats
-        if self.debuguear>0:
-            print('('+p+')/('+q+')')
         res = self.nsp.eval('('+p+')/('+q+')')
 
         # RESULTADO COMO CADENA
