@@ -89,6 +89,7 @@ class calculadora(object):
 
         # Contador de envio a Arduino
         self.resultadoAduino = ''
+        self.resultadoNormal = ''
         self.contador = -1
         self._job = None
 
@@ -343,14 +344,23 @@ class calculadora(object):
                 p='0'
             if (q==''):
                 q='1'
-            if '(' in p and ')' not in p:
-                p=p+')'
-            if '(' in q and ')' not in q:
-                q=q+')'
+
+            rcadena = p[::-1]
+            if '(' in rcadena:
+                if ')' in rcadena:
+                    ax = rcadena.index('(')
+                    cx = rcadena.index(')')
+                    if ax<cx:
+                        p=p+')'
+                else:
+                    p=p+')'
+
             self.resultado(p,q)
 
         if (estado=='REINICIAR'):
             self.calcelUpdate()
+            self.resultadoNormal = ''
+            self.resultadoAduino = ''
             self.vel = -1 # Stop timer
             self.contador = -1 # Reset timer
             self.operacion(p='',q=1)
@@ -412,6 +422,7 @@ class calculadora(object):
             self.labelq.config(fg="#aaa")
 
     def resultado(self, p,q):
+        self.calcelUpdate()
         ml,lp,lq = self.maxlen(p,q)
         self.dividendostr = str(p)
         self.dividendo.set(self.dividendostr)
@@ -433,8 +444,12 @@ class calculadora(object):
         # RESULTADO COMO CADENA
         nres = ''
         sres = str(res)
-
+        if sres == 'ERROR':
+            self.resultastr = sres
+            self.resulta.set(self.resultastr)
+            return
         # Set start envio Arduino
+        self.resultadoNormal = sres
         self.resultadoAduino = self.filtrar(sres)
         self.contador = -1
         self.vel = 0
@@ -450,7 +465,6 @@ class calculadora(object):
         # salida = salida+ '\nRESULTADO: '+nres
         # self.resultastr = salida
         # self.resulta.set(self.resultastr)
-        self.calcelUpdate()
         self.onUpdate()
 
     def calcelUpdate(self):
@@ -468,7 +482,8 @@ class calculadora(object):
             enviar = self.resultadoAduino[self.contador]
 
         if self.debuguear>0:
-            salida = "Velocidad: "+str(self.velist[self.vel])+" ms"
+            salida = u"Res: "+self.resultadoNormal[0:self.porcionlen]
+            salida = salida+u"\nVelocidad: "+str(self.velist[self.vel])+" ms"
             salida = salida+u"\nPosición: "+str(self.contador)
             salida = salida+u"\nDígito: "+enviar
             inicio = self.contador-self.porcionlen
