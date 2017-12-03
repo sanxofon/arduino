@@ -126,7 +126,7 @@ class NumericStringParser(object):
 
     def eval(self, num_string, parseAll=True):
         num_string = num_string.replace('×','*').replace('e','E').replace('π','PI').replace('φ','PH')
-        num_string = re.sub(r'√([^/]+)','sqrt(\\1)',num_string)
+        num_string = re.sub(r'√','sqrt',num_string)
         self.exprStack = []
         results = self.bnf.parseString(num_string, parseAll)
         val = self.evaluateStack(self.exprStack[:])

@@ -63,7 +63,7 @@ class calculadora(object):
         ultrawidescreen = 1
 
         # Velocidad (lista de velocidades en milisegundos)
-        self.velist = [3000,2000,1500,1000,750,500,300,200,150,100,80,60,40,20,10]
+        self.velist = [1000,700,500,400,300,200,150,100,80,60,40,20,10]
 
         # Debug
         self.debuguear = 0
@@ -90,6 +90,7 @@ class calculadora(object):
         # Contador de envio a Arduino
         self.resultadoAduino = ''
         self.contador = -1
+        self._job = None
 
         #######################################
 
@@ -157,11 +158,6 @@ class calculadora(object):
 
         # init timer de envio a arduino
         # self.onUpdate()
-
-        #######################################
-
-        # self.operacion(p='',q=1)
-        # self.calculadora()
 
         #######################################
     def filtrar(self,s):
@@ -237,6 +233,7 @@ class calculadora(object):
         if c=='a': # Avanza/Acelera
             if self.vel<0 and self.resultadoAduino!='':
                 self.vel=0
+                self.calcelUpdate()
                 self.onUpdate()
             elif self.vel<self.velmax:
                 self.vel = self.vel+1
@@ -297,9 +294,15 @@ class calculadora(object):
             cadena = self.modcad(cadena,str(c))
         elif c=='r':    # r
             # SQRT => 'r'
-            if '(' in cadena:
-                if ')' in cadena:
-                    c=''
+            rcadena = cadena[::-1]
+            if '(' in rcadena:
+                if ')' in rcadena:
+                    ax = rcadena.index('(')
+                    cx = rcadena.index(')')
+                    if ax<cx:
+                        c=')'
+                    else:
+                        c = '√('
                 else:
                     c=')'
             else:
@@ -326,16 +329,10 @@ class calculadora(object):
         # if (q==''):
         #     q = '1'
         self.operacion(p,q)
-    
-    def pausa(self, ):
-        while 1:
-            c = readchar.readchar()
-            if c!='':
-                break
-
 
     def calculadora(self, estado, cadena='', p='', q=''):
         if (estado=='RESULTADO'):
+            self.calcelUpdate()
             self.vel = -1 # Stop timer
             self.contador = -1 # Reset timer
             if (self.dondestoy=='p'):
@@ -350,15 +347,10 @@ class calculadora(object):
                 p=p+')'
             if '(' in q and ')' not in q:
                 q=q+')'
-            res = self.nsp.eval(p+'/'+q)
-            res = str(res)
-            if (res[-2:]=='.0'):
-                res=res[:-2]
-            # res = p+'/'+q
-            self.resultado(p,q, res)
-            # self.pausa()
-            # self.calculadora(cadena,p,q,dondestoy)
+            self.resultado(p,q)
+
         if (estado=='REINICIAR'):
+            self.calcelUpdate()
             self.vel = -1 # Stop timer
             self.contador = -1 # Reset timer
             self.operacion(p='',q=1)
@@ -369,6 +361,7 @@ class calculadora(object):
             self.labelq.config(bg="#eee")
             # self.calculadora()
         if (estado=='SALIR'):
+            self.calcelUpdate()
             self.vel = -1 # Stop timer
             self.master.quit()
             # return
@@ -418,7 +411,7 @@ class calculadora(object):
         else:
             self.labelq.config(fg="#aaa")
 
-    def resultado(self, p,q, res):
+    def resultado(self, p,q):
         ml,lp,lq = self.maxlen(p,q)
         self.dividendostr = str(p)
         self.dividendo.set(self.dividendostr)
@@ -433,57 +426,9 @@ class calculadora(object):
 
         ################################################
         # Calcula p y q numericamente a floats
+        if self.debuguear>0:
+            print('('+p+')/('+q+')')
         res = self.nsp.eval('('+p+')/('+q+')')
-        # nspep = self.nsp.eval(p)
-        # nspeq = self.nsp.eval(q)
-        # print("p:", nspep)
-        # print("q:", nspeq)
-        # if isinstance(nspep, float)==False:
-        #     nspep = nspep[1]
-        # if isinstance(nspeq, float)==False:
-        #     nspeq = nspeq[1]
-        # print("p:", nspep)
-        # print("q:", nspeq)
-        # res = self.nsp.eval(p+'/'+q)
-        # print("p:", nspep)
-        # print("q:", nspeq)
-        # fp = float(nspep)
-        # fq = float(nspeq)
-        # fp = Decimal(p)
-        # fq = Decimal(q)
-        # print fp,fq
-
-        ################################################
-        ####### AQUÍ VAN LOS CALCULOS DE PERIODO #######
-
-        # PL = self.Periodo(fq)
-        # prec = (PL[0]+2)*(PL[1]+5)
-
-        # self.resultastr = str(",".join([str(x) for x in PL]))
-        # self.resulta.set(self.resultastr)
-        # return
-
-        # prec = (PL[0]+2)*(PL[1]+5)
-        # prec = 1000
-        # getcontext().prec = prec
-
-        # res = fp/fq
-        # res = Decimal(fp)/Decimal(fq)
-        # nrp, pl = PL[0], PL[1]
-        # if not '.' in str(res):
-        #     precad = str(res)+'.'
-        #     res = str(res)+'.0'
-        #     cad = '0'
-        #     repite = '0'
-        #     longperiodo = '1'
-        # else:
-        #     res = str(res)
-        #     cad = res.split('.')
-        #     precad = str(cad[0])+'.'+str(cad[0:nrp-1])
-        #     cad = str(res.split('.')[1])
-        #     repite = cad[nrp-1:pl+nrp-1]
-        #     longperiodo = str(PL[1])
-
 
         # RESULTADO COMO CADENA
         nres = ''
@@ -505,10 +450,16 @@ class calculadora(object):
         # salida = salida+ '\nRESULTADO: '+nres
         # self.resultastr = salida
         # self.resulta.set(self.resultastr)
-
+        self.calcelUpdate()
         self.onUpdate()
 
+    def calcelUpdate(self):
+        if self._job is not None:
+            self.master.after_cancel(self._job)
+            self._job = None
+
     def onUpdate(self):
+        self.calcelUpdate()
         # Actualiza el caracter enviado, la posición y el estado actual (pausa/play)
         self.contador = self.contador+1
         if self.contador>len(self.resultadoAduino)-2:
@@ -534,7 +485,7 @@ class calculadora(object):
             print(current_iso8601(),self.contador,self.vel,self.velist[self.vel],enviar)
         # schedule timer para ayutollamarse cada segundo
         if self.vel>=0:
-            self.master.after(self.velist[self.vel], self.onUpdate)
+            self._job = self.master.after(self.velist[self.vel], self.onUpdate)
 
 root = Tk()
 calc = calculadora(root);
