@@ -59,18 +59,18 @@ class calculadora(object):
         ######### VARIABLES ADMIN #############
 
         # SCREEN
-        fullscreen = 0
-        ultrawidescreen = 0
+        fullscreen = 1
+        ultrawidescreen = 1
 
         # Velocidad (lista de velocidades en milisegundos)
         self.velist = [3000,2000,1500,1000,750,500,300,200,150,100,80,60,40,20,10]
 
         # Debug
-        self.debuguear = 1
+        self.debuguear = 0
         self.porcionlen = 70 # Porcion a mostrar
         
         # Display out to Arduino (on/off)
-        self.sendToDisplay = 0
+        self.sendToDisplay = 1
 
         #Arduino COMM (Display)
         if self.sendToDisplay>0:
