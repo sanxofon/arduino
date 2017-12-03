@@ -63,7 +63,7 @@ class calculadora(object):
         ultrawidescreen = 1
 
         # Velocidad (lista de velocidades en milisegundos)
-        self.velist = [1000,700,500,400,300,200,150,100,80,60,40,20,10]
+        self.velist = [1000,700,500,400,300,200,150,100,80,60,40,20]
 
         # Debug
         self.debuguear = 0
@@ -503,6 +503,10 @@ class calculadora(object):
         if self.debuguear>0:
             salida = u"Res: "+self.resultadoNormal[0:self.porcionlen]
             salida = salida+u"\nVelocidad: "+str(self.velist[self.vel])+" ms"
+            tiempofaltante = round(self.velist[self.vel]*(len(self.resultadoAduino)-self.contador)/1000)
+            m, s = divmod(tiempofaltante, 60)
+            h, m = divmod(m, 60)
+            salida = salida+u"\nTiempo restante: "+str("%d:%02d:%02d" % (h, m, s))+" min"
             salida = salida+u"\nPosición: "+str(self.contador)+" / "+str(len(self.resultadoAduino))
             salida = salida+u"\nDígito: "+enviar
             salida = salida+u"\nPorción: "+self.porcion.rjust(self.porcionlen, ' ').replace(' ','  ')
