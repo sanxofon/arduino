@@ -68,6 +68,7 @@ class calculadora(object):
         # Debug
         self.debuguear = 0
         self.porcionlen = 70 # Porcion a mostrar
+        self.porcion = ''
         
         # Display out to Arduino (on/off)
         self.sendToDisplay = 1
@@ -337,6 +338,7 @@ class calculadora(object):
     def calculadora(self, estado, cadena='', p='', q=''):
         if (estado=='RESULTADO'):
             self.calcelUpdate()
+            self.porcion = ''
             self.vel = -1 # Stop timer
             self.contador = -1 # Reset timer
             if (self.dondestoy=='p'):
@@ -477,20 +479,23 @@ class calculadora(object):
         self.calcelUpdate()
         # Actualiza el caracter enviado, la posición y el estado actual (pausa/play)
         self.contador = self.contador+1
+        inicio = self.contador-self.porcionlen
+        if inicio<0:
+            inicio=0
         if self.contador>len(self.resultadoAduino)-2:
             enviar = '0'
         else:
             enviar = self.resultadoAduino[self.contador]
+        self.porcion = self.porcion+enviar
+        if len(self.porcion)>self.porcionlen-2:
+            self.porcion = self.porcion[-self.porcionlen:]
 
         if self.debuguear>0:
             salida = u"Res: "+self.resultadoNormal[0:self.porcionlen]
             salida = salida+u"\nVelocidad: "+str(self.velist[self.vel])+" ms"
             salida = salida+u"\nPosición: "+str(self.contador)+" / "+str(len(self.resultadoAduino))
             salida = salida+u"\nDígito: "+enviar
-            inicio = self.contador-self.porcionlen
-            if inicio<0:
-                inicio=0
-            salida = salida+u"\nPorción: "+self.resultadoAduino[inicio:self.contador+1].rjust(self.porcionlen, ' ').replace(' ','  ')
+            salida = salida+u"\nPorción: "+self.porcion.rjust(self.porcionlen, ' ').replace(' ','  ')
             self.resultastr = salida
             self.resulta.set(self.resultastr)
         # ENVIO A DISPLAY
