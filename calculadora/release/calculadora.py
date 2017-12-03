@@ -210,6 +210,9 @@ class calculadora(object):
         # self.resultastr = c+': ',str(k)+': '+str(event.state)
         # self.resulta.set(self.resultastr)
         # return
+        if self.debuguear==0:
+            self.resultastr = ''
+            self.resulta.set(self.resultastr)
 
         numrs = ['0','1','2','3','4','5','6','7','8','9']
         if (self.dondestoy=='q'):
@@ -484,7 +487,7 @@ class calculadora(object):
         if self.debuguear>0:
             salida = u"Res: "+self.resultadoNormal[0:self.porcionlen]
             salida = salida+u"\nVelocidad: "+str(self.velist[self.vel])+" ms"
-            salida = salida+u"\nPosición: "+str(self.contador)
+            salida = salida+u"\nPosición: "+str(self.contador)+" / "+str(len(self.resultadoAduino))
             salida = salida+u"\nDígito: "+enviar
             inicio = self.contador-self.porcionlen
             if inicio<0:
