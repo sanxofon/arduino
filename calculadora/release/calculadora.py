@@ -19,52 +19,72 @@ def current_iso8601():
     # https://xkcd.com/1179/
     return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
 
-"""____________________________________________
-|                                              |
-|  TECLAS ACEPTADAS:                           |
-|     0-9  => Numeros                          |
-|       e  => Euler                            |
-|       h  => Pi (π)                           |
-|       f  => Phi (φ)                          |
-|       *  => Multiplicar (×)                  |
-|       +  => Sumar                            |
-|       -  => Restar                           |
-|       r  => Raiz cuadrada (√)                |
-|       p  => Establecer dividendo             |
-|       q  => Establecer divisor (dividir)     |
-|  [ENTER] => Igual a                          |
-|        c => Reiniciar                        |
-|        -----------------------               |
-|        a => Avanzar (enviar a Arduino)       |
-|        s => Stop (pausar envio a Arduino)    |
-|        -----------------------               |
-|        k => Salir del programa (oculto)      |
-|____________________________________________"""
-
 """
-    ToDo:
-        ✓ Alcarar el 1 del divisor cuando aún no se ha seteado
-        ✓ Modificar el signo de * por el de × (U+00D7 => c3 97  MULTIPLICATION SIGN) en la vista (similar a PI=>π)
-        ✓ Definir presición mínima para operaciones y constantes
-        ✓ Implementar "avanzar" (a) y "stop" (s) y el envío de caracteres por el serial uno por uno con timer
-        ✓ En el envío de números (uno por uno a arduino) debe de cambiarse el número que 
+    CONTROLES ASIGNADOS:
+         ______________________________________________
+        |                                              |
+        |  TECLAS ACEPTADAS:                           |
+        |     0-9  => Numeros                          |
+        |       e  => Euler                            |
+        |       h  => Pi (π)                           |
+        |       f  => Phi (φ)                          |
+        |       *  => Multiplicar (×)                  |
+        |       +  => Sumar                            |
+        |       -  => Restar                           |
+        |       r  => Raiz cuadrada (√)                |
+        |       p  => Establecer dividendo             |
+        |       q  => Establecer divisor (dividir)     |
+        |  [ENTER] => Igual a                          |
+        |        c => Reiniciar                        |
+        |        -----------------------               |
+        |        a => Avanzar (enviar a Arduino)       |
+        |        s => Stop (pausar envio a Arduino)    |
+        |        -----------------------               |
+        |        k => Salir del programa (oculto)      |
+        |______________________________________________|
+ 
+    INSTRUCCIONES:
+        
+        1. Definir VARIABLES GENERALES de Desarrollo o Producción en código (VER __init__ ABAJO)
+            1.1. Definir puerto, baudios del puerto serial
+            1.2. Definir presición máxima para operaciones y constantes
+            1.3. Definir "debug", "sendToDisplay", "timeout", "fullscreen" y "utrawidescreen"
+
+        2. Ejecutar el programa con el acceso directo que se encuentra en la misma carpeta.
+            2.1. Ejecutar desde consola para debug en carpeta:
+                [WidowsKey]+R
+                "cmd" + [ENTER]
+                $ cd c:\Users\user\Ruta_ALaCarpeta\
+                $ python calculadora.py
+        
+        3. Iniciado el programa, escribir operación en dividendo (p) y/o divisor (q)
+            3.1. El paréntesis de la raiz se cierra clicando "r" por segunda vez.
+            3.2. Apretar [ENTER] para mostrar el resultado (en debug) o comenzar envío a Display
+        
+        4. Apretar "acelerar" (a) y "desacelerar" (s) y el envío de caracteres por el serial
+            4.1. En el envío de números (uno por uno a arduino) se cambia el número que 
             tenga el punto decimal a la derecha, por la letra mayúscula que corresponda:
-            A=1, B=2, C=3, D=4, E=5, F=6, G=7, H=8, I=9, J=0
-        ✓ Generar 0's infinitos para números enteros
-        - DEBUG ARDUINO: Caso número negativo en resultado debe existir signo de menos en arduino !!!
+                A=1, B=2, C=3, D=4, E=5, F=6, G=7, H=8, I=9, J=0
+    
+    BUGS:
+        - DEBUG ARDUINO: Caso NÚMERO NEGATIVO EN RESULTADO, se envía guión al inicio: -3.141592...
+                            Debe existir signo de menos en arduino !!!
+        - DEBUG ARDUINO: Caso RESET, el resultado debe vaciarse en display. 
+                            Falta definir caracter de RESET !!!
+
 """
 class calculadora(object):
     def __init__(self):
 
         # DEFINIR VARIABLES GENERALES
-        self.fullscreen = 1         # Abrir en pantalla completa. Dev: 0, Prd: 1
-        self.ultrawidescreen = 1    # Monitor UltraWideScreen
-        self.debuguear = 0          # Debug. Muestra en pantalla lo que se envia al display
-        self.sendToDisplay = 1      # Display out to Arduino (on/off)
+        self.maxprec = 1000        # Precision numérica de la calculadora - Dev:1000, Prd: 20000
+        self.debuguear = 1          # Debug. Muestra en pantalla lo que se envia al display
+        self.sendToDisplay = 1      # Enviar dígitos a Display (on/off)
         self.ard_comm = 'COM3'      # Serial com port
         self.ard_baud = 9600        # Serial baud rate
         self.ard_tiot = 0.1         # Serial timeout
-        self.maxprec = 1000       # Precision numérica de la calculadora - Dev:1000, Prd: 20000
+        self.fullscreen = 1         # Abrir en pantalla completa. Dev: 0, Prd: 1
+        self.ultrawidescreen = 1    # Monitor UltraWideScreen
 
     def iniciar(self, master):
 
