@@ -7,7 +7,7 @@ import serial
 from Tkinter import Tk, Label, Canvas, StringVar
 from numericStringParser import *
 import time
-# import winsound
+import winsound
 
 def current_iso8601():
     return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
@@ -546,6 +546,38 @@ class calculadora(object):
         # winsound.Beep(frequencyHRTZ, durationMS)
         # if self.char2htz(enviar)>0:
         #     winsound.Beep(self.char2htz(enviar), int(self.velist[self.vel]*0.9))
+        if self.char2wav(enviar)!='':
+            winsound.PlaySound('wav/'+self.char2wav(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
+
+    def char2wav(self,c):
+        r = {
+            'A':'1',
+            'B':'2',
+            'C':'3',
+            'D':'4',
+            'E':'5',
+            'F':'6',
+            'G':'7',
+            'H':'8',
+            'I':'9',
+            'J':'0',
+            '-':'0'
+        }
+        if c in r.keys():
+            c = r[c]
+        n = {
+            '1':'c1',
+            '2':'d1',
+            '3':'d1s',
+            '4':'e1',
+            '5':'f1',
+            '6':'g1',
+            '7':'a1',
+            '8':'b1',
+            '9':'c2',
+            '0':''
+        }
+        return n[c]
 
     def char2htz(self,c):
         r = {
