@@ -54,35 +54,39 @@ def current_iso8601():
         - DEBUG ARDUINO: Caso número negativo en resultado debe existir signo de menos en arduino !!!
 """
 class calculadora(object):
-    def __init__(self, master):
+    def __init__(self):
 
-        ######### VARIABLES ADMIN #############
+        # DEFINIR VARIABLES GENERALES
+        self.fullscreen = 1         # Abrir en pantalla completa. Dev: 0, Prd: 1
+        self.ultrawidescreen = 1    # Monitor UltraWideScreen
+        self.debuguear = 0          # Debug. Muestra en pantalla lo que se envia al display
+        self.sendToDisplay = 1      # Display out to Arduino (on/off)
+        self.ard_comm = 'COM3'      # Serial com port
+        self.ard_baud = 9600        # Serial baud rate
+        self.ard_tiot = 0.1         # Serial timeout
+        self.maxprec = 1000       # Precision numérica de la calculadora - Dev:1000, Prd: 20000
 
-        # SCREEN
-        fullscreen = 1
-        ultrawidescreen = 1
+    def iniciar(self, master):
 
         # Velocidad (lista de velocidades en milisegundos)
-        self.velist = [1000,700,500,400,300,200,150,100,80,60,40,20]
+        self.velist = [1000,700,500,400,300,200,150,100,80,60,40]
 
         # Debug
-        self.debuguear = 0
         self.porcionlen = 70 # Porcion a mostrar
         self.porcion = ''
         
-        # Display out to Arduino (on/off)
-        self.sendToDisplay = 1
-
-        #Arduino COMM (Display)
-        if self.sendToDisplay>0:
-            arduino = serial.Serial('COM3', 9600, timeout=.1) # debe coincidir con los baudios y el puerto arduino
-            time.sleep(0.1)
 
         #######################################
         ######### VARIABLES GENERALES #########
 
+        #Arduino COMM (Display)
+        if self.sendToDisplay>0:
+            arduino = serial.Serial(self.ard_comm, self.ard_baud, timeout=self.ard_tiot) # debe coincidir con los baudios y el puerto arduino
+            time.sleep(0.1)
+
         # nsp class
         self.nsp = NumericStringParser()
+        self.nsp.setPresicion(self.maxprec) #Set presicion
 
         # Vel sets
         self.velmax = len(self.velist)-1
@@ -97,7 +101,7 @@ class calculadora(object):
         #######################################
 
         self.master = master
-        if fullscreen>0:
+        if self.fullscreen>0:
             # Full screen
             master.overrideredirect(True)
             master.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
@@ -119,7 +123,7 @@ class calculadora(object):
         self.dividendostr = ""
         self.dividendo = StringVar()
         self.dividendo.set(self.dividendostr)
-        if ultrawidescreen>0:
+        if self.ultrawidescreen>0:
             # UltraWide Screen
             self.labelp = Label(master, textvariable=self.dividendo, bg="#fd0", width=18, justify="center", font=("Roboto", 192))
         else:
@@ -134,7 +138,7 @@ class calculadora(object):
         self.divisorstr = "1"
         self.divisor = StringVar()
         self.divisor.set(self.divisorstr)
-        if ultrawidescreen>0:
+        if self.ultrawidescreen>0:
             # UltraWide Screen
             self.labelq = Label(master, textvariable=self.divisor, bg="#eee", fg="#aaa", width=18, justify="center", font=("Roboto", 192))
         else:
@@ -145,7 +149,7 @@ class calculadora(object):
         self.resultastr = ""
         self.resulta = StringVar()
         self.resulta.set(self.resultastr)
-        if ultrawidescreen>0:
+        if self.ultrawidescreen>0:
             # UltraWide Screen
             self.labelr = Label(master, textvariable=self.resulta, bg="#eee", width=213, justify="left", font=("Roboto", 16))
         else:
@@ -490,23 +494,28 @@ class calculadora(object):
         # Actualiza el caracter enviado, la posición y el estado actual (pausa/play)
         self.contador = self.contador+1
         inicio = self.contador-self.porcionlen
+        if self.contador>self.maxprec:
+            self.porcion = ''
+            self.contador = 0
+            self.resultado(self.dividendostr, self.divisorstr)
+            return
         if inicio<0:
             inicio=0
-        if self.contador>len(self.resultadoAduino)-2:
+        if self.contador>len(self.resultadoAduino)-1:
             enviar = '0'
         else:
             enviar = self.resultadoAduino[self.contador]
         self.porcion = self.porcion+enviar
-        if len(self.porcion)>self.porcionlen-2:
+        if len(self.porcion)>self.porcionlen-1:
             self.porcion = self.porcion[-self.porcionlen:]
 
         if self.debuguear>0:
-            salida = u"Res: "+self.resultadoNormal[0:self.porcionlen]
+            salida = u"Resultado: "+self.resultadoNormal[0:self.porcionlen]
             salida = salida+u"\nVelocidad: "+str(self.velist[self.vel])+" ms"
             tiempofaltante = round(self.velist[self.vel]*(len(self.resultadoAduino)-self.contador)/1000)
             m, s = divmod(tiempofaltante, 60)
             h, m = divmod(m, 60)
-            salida = salida+u"\nTiempo restante: "+str("%d:%02d:%02d" % (h, m, s))+" min"
+            salida = salida+u"\nTiempo restante: "+str("%d:%02d:%02d" % (h, m, s))+" hms"
             salida = salida+u"\nPosición: "+str(self.contador)+" / "+str(len(self.resultadoAduino))
             salida = salida+u"\nDígito: "+enviar
             salida = salida+u"\nPorción: "+self.porcion.rjust(self.porcionlen, ' ').replace(' ','  ')
@@ -523,5 +532,6 @@ class calculadora(object):
             self._job = self.master.after(self.velist[self.vel], self.onUpdate)
 
 root = Tk()
-calc = calculadora(root);
+calc = calculadora();
+calc.iniciar(root);
 root.mainloop()

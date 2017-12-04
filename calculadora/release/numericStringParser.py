@@ -6,7 +6,6 @@ import operator,math
 # from scipy import constants
 import re
 import mpmath as mp
-mp.mp.dps = 10000 # max: 100,000
 
 class NumericStringParser(object):
 
@@ -16,6 +15,10 @@ class NumericStringParser(object):
     def pushUMinus(self, strg, loc, toks):
         if toks and toks[0] == '-':
             self.exprStack.append('unary -')
+
+    def setPresicion(self, maxprec):
+        # Maximum presicion set
+        mp.mp.dps = maxprec # max: 100,000
 
     def __init__(self):
         """
@@ -122,7 +125,7 @@ class NumericStringParser(object):
         else:
             # print "X8\n"
             # return '{:.20f}'.format(float(op))
-            return float(op)
+            return op
 
     def eval(self, num_string, parseAll=True):
         num_string = num_string.replace('×','*').replace('e','E').replace('π','PI').replace('φ','PH')
