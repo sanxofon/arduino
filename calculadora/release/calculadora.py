@@ -1,22 +1,15 @@
 # coding: utf-8
 # Santiago Chávez Novaro
 from __future__ import division
-# from __future__ import print_function
 
-# from decimal import *
-# import readchar
 import os,sys
 import serial
 from Tkinter import Tk, Label, Canvas, StringVar
 from numericStringParser import *
-# from primefac import *
-# import re
 import time
+# import winsound
 
 def current_iso8601():
-    """Get current date and time in ISO8601"""
-    # https://en.wikipedia.org/wiki/ISO_8601
-    # https://xkcd.com/1179/
     return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
 
 """
@@ -77,14 +70,14 @@ class calculadora(object):
     def __init__(self):
 
         # DEFINIR VARIABLES GENERALES
-        self.maxprec = 1000        # Precision numérica de la calculadora - Dev:1000, Prd: 20000
+        self.maxprec = 20000        # Precision numérica de la calculadora - Dev:1000, Prd: 20000
         self.debuguear = 1          # Debug. Muestra en pantalla lo que se envia al display
-        self.sendToDisplay = 1      # Enviar dígitos a Display (on/off)
+        self.sendToDisplay = 0      # Enviar dígitos a Display (on/off)
         self.ard_comm = 'COM3'      # Serial com port
         self.ard_baud = 9600        # Serial baud rate
         self.ard_tiot = 0.1         # Serial timeout
         self.fullscreen = 1         # Abrir en pantalla completa. Dev: 0, Prd: 1
-        self.ultrawidescreen = 1    # Monitor UltraWideScreen
+        self.ultrawidescreen = 0    # Monitor UltraWideScreen
 
     def iniciar(self, master):
 
@@ -550,6 +543,39 @@ class calculadora(object):
         # schedule timer para ayutollamarse cada segundo
         if self.vel>=0:
             self._job = self.master.after(self.velist[self.vel], self.onUpdate)
+        # winsound.Beep(frequencyHRTZ, durationMS)
+        # if self.char2htz(enviar)>0:
+        #     winsound.Beep(self.char2htz(enviar), int(self.velist[self.vel]*0.9))
+
+    def char2htz(self,c):
+        r = {
+            'A':'1',
+            'B':'2',
+            'C':'3',
+            'D':'4',
+            'E':'5',
+            'F':'6',
+            'G':'7',
+            'H':'8',
+            'I':'9',
+            'J':'0',
+            '-':'0'
+        }
+        if c in r.keys():
+            c = r[c]
+        n = {
+            '1':440,
+            '2':494,
+            '3':523,
+            '4':587,
+            '5':659,
+            '6':698,
+            '7':784,
+            '8':880,
+            '9':988,
+            '0':0
+        }
+        return n[c]
 
 root = Tk()
 calc = calculadora();
