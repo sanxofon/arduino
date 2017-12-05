@@ -1,5 +1,6 @@
 # coding: utf-8
-# Santiago Chávez Novaro
+# Author Santiago Chávez Novaro
+# Calculadora p/q de operaciones matemáticas (y musiquita!)
 from __future__ import division
 
 import os,sys
