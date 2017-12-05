@@ -83,12 +83,12 @@ class calculadora(object):
         # DEFINIR VARIABLES GENERALES
         self.maxprec = 20000        # Precision numérica de la calculadora - Dev:1000, Prd: 20000
         self.debuguear = 1          # Debug. Muestra en pantalla lo que se envia al display
-        self.sendToDisplay = 0      # Enviar dígitos a Display (on/off)
+        self.sendToDisplay = 1      # Enviar dígitos a Display (on/off)
         self.ard_comm = 'COM3'      # Serial com port
         self.ard_baud = 9600        # Serial baud rate
         self.ard_tiot = 0.1         # Serial timeout
-        self.fullscreen = 0         # Abrir en pantalla completa. Dev: 0, Prd: 1
-        self.ultrawidescreen = 0    # Monitor UltraWideScreen
+        self.fullscreen = 1         # Abrir en pantalla completa. Dev: 0, Prd: 1
+        self.ultrawidescreen = 1    # Monitor UltraWideScreen
 
     def iniciar(self, master):
 
