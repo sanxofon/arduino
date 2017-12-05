@@ -60,15 +60,18 @@ def current_iso8601():
                 A=1, B=2, C=3, D=4, E=5, F=6, G=7, H=8, I=9, J=0
     
     EJEMPLOS:
-    1/7 = 0.142857, periodo de 6 dígitos
-    1/17 = 0.0588235294117647, periodo de 16 dígitos
-    1/19 = 0.052631578947368421, periodo de 18 dígitos
-    1/23 = 0.0434782608695652173913, periodo de 22 dígitos
-    1/29 = 0.0344827586206896551724137931, periodo de 28 dígitos
-    1/47 = 0.0212765957446808510638297872340425531914893617, periodo de 46 dígitos
-    1/59 = 0.0169491525423728813559322033898305084745762711864406779661, periodo de 58 dígitos
-    1/61 = 0.016393442622950819672131147540983606557377049180327868852459, periodo de 60 dígitos
-    1/97 = 0.010309278350515463917525773195876288659793814432989690721649484536082474226804123711340206185567, periodo de 96 dígitos
+        1/7 = 0.142857, periodo de 6 dígitos
+        1/17 = 0.0588235294117647, periodo de 16 dígitos
+        1/19 = 0.052631578947368421, periodo de 18 dígitos
+        1/23 = 0.0434782608695652173913, periodo de 22 dígitos
+        1/29 = 0.0344827586206896551724137931, periodo de 28 dígitos
+        1/47 = 0.0212765957446808510638297872340425531914893617, periodo de 46 dígitos
+        1/59 = 0.0169491525423728813559322033898305084745762711864406779661, periodo de 58 dígitos
+        1/61 = 0.016393442622950819672131147540983606557377049180327868852459, periodo de 60 dígitos
+        1/97 = 0.010309278350515463917525773195876288659793814432989690721649484536082474226804123711340206185567, periodo de 96 dígitos
+
+    MUSICALES:
+        BatMan - 66443344/99999999
 
     BUGS:
         - DEBUG ARDUINO: Caso NÚMERO NEGATIVO EN RESULTADO, se envía guión al inicio: -3.141592...
@@ -83,39 +86,35 @@ class calculadora(object):
         # DEFINIR VARIABLES GENERALES
         self.maxprec = 20000        # Precision numérica de la calculadora - Dev:1000, Prd: 20000
         self.debuguear = 1          # Debug. Muestra en pantalla lo que se envia al display
-        self.sendToDisplay = 1      # Enviar dígitos a Display (on/off)
-        self.ard_comm = 'COM3'      # Serial com port
-        self.ard_baud = 9600        # Serial baud rate
-        self.ard_tiot = 0.1         # Serial timeout
-        self.fullscreen = 1         # Abrir en pantalla completa. Dev: 0, Prd: 1
-        self.ultrawidescreen = 1    # Monitor UltraWideScreen
+        self.sendToDisplay = 0      # Enviar dígitos a Display (on/off)
+        self.ard_comm = 'COM3'      # Serial com port, debe coincidir con los baudios y el puerto arduino
+        self.ard_baud = 9600        # Serial baud rate, debe coincidir con los baudios y el puerto arduino
+        self.ard_tiot = 0.1         # Serial timeout 100ms, testeado con arduino UNO
+        self.fullscreen = 0         # Abrir en pantalla completa. Dev: 0, Prd: 1
+        self.ultrawidescreen = 0    # Monitor UltraWideScreen
 
     def iniciar(self, master):
-
+        ######### VARIABLES GENERALES #########
         # Velocidad (lista de velocidades en milisegundos)
-        self.velist = [1000,700,500,400,300,200,150,100,80,60,40]
+        self.velist = [1000,700,500,400,300,200,150,100]
+        self.velmax = len(self.velist)-1
+        self.vel = -1
+        self.memvel = 0
 
         # Debug
         self.porcionlen = 70 # Porcion a mostrar
         self.porcion = ''
-        self.playsounds = 0
-        
-
-        #######################################
-        ######### VARIABLES GENERALES #########
+        self.playsounds = 0 # VERSION DE PRUEBA!!
 
         #Arduino COMM (Display)
         if self.sendToDisplay>0:
-            arduino = serial.Serial(self.ard_comm, self.ard_baud, timeout=self.ard_tiot) # debe coincidir con los baudios y el puerto arduino
+            # debe coincidir con los baudios y el puerto arduino
+            arduino = serial.Serial(self.ard_comm, self.ard_baud, timeout=self.ard_tiot)
             time.sleep(0.1)
 
         # nsp class
         self.nsp = NumericStringParser()
         self.nsp.setPresicion(self.maxprec) #Set presicion
-
-        # Vel sets
-        self.velmax = len(self.velist)-1
-        self.vel = -1
 
         # Contador de envio a Arduino
         self.resultadoAduino = ''
@@ -134,7 +133,6 @@ class calculadora(object):
             # Otra opción
             # master.attributes('-fullscreen', True)
         else:
-            # master.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth()-16, root.winfo_screenheight()-80))
             master.geometry("%dx%d+0+0" % (master.winfo_screenwidth()-16, master.winfo_screenheight()-80))
 
         master.title("Calculadora")
@@ -216,30 +214,25 @@ class calculadora(object):
         cad = cad.decode('utf-8')
         p = cad[-1:]
         if isinstance(c, int):
-            # if p==')':
-            #     if (len(cad)>=c+1):
-            #         cad = cad[:-(c+1)]+')'
-            # else:
             if (len(cad)>=c):
                 cad = cad[:-c]
         else:
             c = c.decode('utf-8')
-            # if p==')':
-            #     cad = cad[:-1]+c+')'
-            # else:
             cad = cad+c
         cad = cad.encode('utf-8')
         return cad
 
     def recibeChar(self,event):
-        # Color gris en divisor cuando es 1
         k = event.keycode
         c = event.char
         p = str(self.dividendostr)
         q = str(self.divisorstr)
+
+        # # Test input del teclado
         # self.resultastr = c+': ',str(k)+': '+str(event.state)
         # self.resulta.set(self.resultastr)
         # return
+        
         if self.debuguear==0:
             self.resultastr = ''
             self.resulta.set(self.resultastr)
@@ -343,18 +336,16 @@ class calculadora(object):
                 c = '√('
             # incrementa la cadena con c
             cadena = self.modcad(cadena,str(c))
-        elif c=='p':    # p => 112
+        elif c=='p':    # p
             # Debe enviar al valor p sólo si no estamos ahí
             if (self.dondestoy!='p'):
                 self.calculadora('SETP', cadena, p, q)
                 return
-                # return cadena, 'SETP'
-        elif c=='q':    # q => 113
+        elif c=='q':    # q
             # Debe enviar al valor q sólo si no estamos ahí
             if (self.dondestoy!='q'):
                 self.calculadora('SETQ', cadena, p, q)
                 return
-                # return cadena, 'SETQ'
 
         if (self.dondestoy=='p'):
             p = cadena
@@ -368,6 +359,9 @@ class calculadora(object):
         if (estado=='RESULTADO'):
             self.calcelUpdate()
             self.porcion = ''
+            self.memvel = 0 #Memoria de la volicidad actual
+            if self.vel>0:
+                self.memvel = self.vel
             self.vel = -1 # Stop timer
             self.contador = -1 # Reset timer
             if (self.dondestoy=='p'):
@@ -378,7 +372,6 @@ class calculadora(object):
                 p='0'
             if (q==''):
                 q='1'
-
             rcadena = p[::-1]
             if '(' in rcadena:
                 if ')' in rcadena:
@@ -388,7 +381,6 @@ class calculadora(object):
                         p=p+')'
                 else:
                     p=p+')'
-
             rcadena = q[::-1]
             if '(' in rcadena:
                 if ')' in rcadena:
@@ -398,7 +390,6 @@ class calculadora(object):
                         q=q+')'
                 else:
                     q=q+')'
-
             self.resultado(p,q)
 
         if (estado=='REINICIAR'):
@@ -480,7 +471,7 @@ class calculadora(object):
             self.labelq.config(fg="#aaa")
 
         ################################################
-        # Calcula p y q numericamente a floats
+        # Calcula p/q en la presición definida
         res = self.nsp.eval('('+p+')/('+q+')')
 
         # RESULTADO COMO CADENA
@@ -494,19 +485,8 @@ class calculadora(object):
         self.resultadoNormal = sres
         self.resultadoAduino = self.filtrar(sres)
         self.contador = -1
-        self.vel = 0
-
-        # # IMPRIME LOS DETALLES DEL RESULTADO
-        # salida = ''
-        # for i in range(len(sres)):
-        #     r = sres[i]
-        #     if i/100==int(i/100):
-        #         r=r+"\n"
-        #     nres=nres+r
-        # salida = salida+ 'LONGITUD DEL RESULTADO: '+str(len(sres))
-        # salida = salida+ '\nRESULTADO: '+nres
-        # self.resultastr = salida
-        # self.resulta.set(self.resultastr)
+        self.vel = self.memvel
+        # Inicia envío a display arduino
         self.onUpdate()
 
     def calcelUpdate(self):
@@ -555,98 +535,21 @@ class calculadora(object):
         # schedule timer para ayutollamarse cada segundo
         if self.vel>=0:
             self._job = self.master.after(self.velist[self.vel], self.onUpdate)
+
+        # Versión de prueba !!!
         if self.playsounds>0 and self.char2wav(enviar)!='':
-            winsound.PlaySound('wav2/'+self.char2wav(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
-        # if self.playsounds>0 and self.char2piano(enviar)!='':
-        #     winsound.PlaySound('piano/Piano.pp.'+self.char2piano(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
+            ruta = 'wav/'
+            if self.velist[self.vel]<300:
+                ruta = 'wav2/'             
+            winsound.PlaySound(ruta+self.char2wav(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
 
     def char2wav(self,c):
-        r = {
-            'A':'1',
-            'B':'2',
-            'C':'3',
-            'D':'4',
-            'E':'5',
-            'F':'6',
-            'G':'7',
-            'H':'8',
-            'I':'9',
-            'J':'0',
-            '-':'0'
-        }
+        r = { 'A':'1', 'B':'2', 'C':'3', 'D':'4', 'E':'5', 'G':'7', 'H':'8', 'I':'9', 'J':'0', '-':'0' }
         if c in r.keys():
             c = r[c]
         n = {
-            '1':'c1',
-            '2':'d1',
-            '3':'d1s',
-            '4':'e1',
-            '5':'f1',
-            '6':'g1',
-            '7':'a1',
-            '8':'b1',
-            '9':'c2',
-            '0':''
-        }
-        return n[c]
-
-    def char2piano(self,c):
-        r = {
-            'A':'1',
-            'B':'2',
-            'C':'3',
-            'D':'4',
-            'E':'5',
-            'F':'6',
-            'G':'7',
-            'H':'8',
-            'I':'9',
-            'J':'0',
-            '-':'0'
-        }
-        if c in r.keys():
-            c = r[c]
-        n = {
-            '1':'Db3',
-            '2':'Eb3',
-            '3':'Gb3',
-            '4':'Ab3',
-            '5':'Bb3',
-            '6':'Db4',
-            '7':'Eb4',
-            '8':'Gb4',
-            '9':'Ab4',
-            '0':'Bb4'
-        }
-        return n[c]
-
-    def char2htz(self,c):
-        r = {
-            'A':'1',
-            'B':'2',
-            'C':'3',
-            'D':'4',
-            'E':'5',
-            'F':'6',
-            'G':'7',
-            'H':'8',
-            'I':'9',
-            'J':'0',
-            '-':'0'
-        }
-        if c in r.keys():
-            c = r[c]
-        n = {
-            '1':440,
-            '2':494,
-            '3':523,
-            '4':587,
-            '5':659,
-            '6':698,
-            '7':784,
-            '8':880,
-            '9':988,
-            '0':0
+            '1':'c1', '2':'d1', '3':'e1', '4':'f1', '5':'', '6':'g1', '7':'a1', '8':'b1', '9':'c2', '0':'' # Mayor, Silencios: 0, 5
+            # '1':'c1', '2':'d1', '3':'d1s','4':'e1', '5':'f1','6':'g1','7':'a1', '8':'b1', '9':'c2', '0':'' # Mayor/Menor, Silencio: 0
         }
         return n[c]
 

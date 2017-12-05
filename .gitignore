@@ -32,3 +32,5 @@ calculadora/demo/calculadora_win_bak\.py
 *.reapeaks
 
 calculadora/release/test\.txt
+
+calculadora/release/_bak/
