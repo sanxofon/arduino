@@ -1,5 +1,6 @@
 # coding: utf-8
 # Author Santiago Chávez Novaro
+# Parseador de operaciones simples con presición arbitraria
 from pyparsing import (Literal, CaselessLiteral, Word, Combine, Group, Optional,
                        ZeroOrMore, Forward, nums, alphas, oneOf)
 import operator,math
@@ -17,8 +18,9 @@ class NumericStringParser(object):
             self.exprStack.append('unary -')
 
     def setPresicion(self, maxprec):
-        # Maximum presicion set
-        mp.mp.dps = maxprec # max: 100,000
+        # Definir presición máxima de cálculos y constantes
+        # Se debe establecer la variable antes de llamar a la función eval()
+        mp.mp.dps = maxprec # Depende de la memoria y el procesador!!!
 
     def __init__(self):
         """
