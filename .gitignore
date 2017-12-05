@@ -28,3 +28,7 @@ calculadora/demo/test\.txt
 calculadora/demo/numericStringParser_bak\.py
 
 calculadora/demo/calculadora_win_bak\.py
+
+*.reapeaks
+
+calculadora/release/test\.txt

@@ -59,6 +59,17 @@ def current_iso8601():
             tenga el punto decimal a la derecha, por la letra mayúscula que corresponda:
                 A=1, B=2, C=3, D=4, E=5, F=6, G=7, H=8, I=9, J=0
     
+    EJEMPLOS:
+    1/7 = 0.142857, periodo de 6 dígitos
+    1/17 = 0.0588235294117647, periodo de 16 dígitos
+    1/19 = 0.052631578947368421, periodo de 18 dígitos
+    1/23 = 0.0434782608695652173913, periodo de 22 dígitos
+    1/29 = 0.0344827586206896551724137931, periodo de 28 dígitos
+    1/47 = 0.0212765957446808510638297872340425531914893617, periodo de 46 dígitos
+    1/59 = 0.0169491525423728813559322033898305084745762711864406779661, periodo de 58 dígitos
+    1/61 = 0.016393442622950819672131147540983606557377049180327868852459, periodo de 60 dígitos
+    1/97 = 0.010309278350515463917525773195876288659793814432989690721649484536082474226804123711340206185567, periodo de 96 dígitos
+
     BUGS:
         - DEBUG ARDUINO: Caso NÚMERO NEGATIVO EN RESULTADO, se envía guión al inicio: -3.141592...
                             Debe existir signo de menos en arduino !!!
@@ -76,7 +87,7 @@ class calculadora(object):
         self.ard_comm = 'COM3'      # Serial com port
         self.ard_baud = 9600        # Serial baud rate
         self.ard_tiot = 0.1         # Serial timeout
-        self.fullscreen = 1         # Abrir en pantalla completa. Dev: 0, Prd: 1
+        self.fullscreen = 0         # Abrir en pantalla completa. Dev: 0, Prd: 1
         self.ultrawidescreen = 0    # Monitor UltraWideScreen
 
     def iniciar(self, master):
@@ -545,7 +556,7 @@ class calculadora(object):
         if self.vel>=0:
             self._job = self.master.after(self.velist[self.vel], self.onUpdate)
         if self.playsounds>0 and self.char2wav(enviar)!='':
-            winsound.PlaySound('wav/'+self.char2wav(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
+            winsound.PlaySound('wav2/'+self.char2wav(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
         # if self.playsounds>0 and self.char2piano(enviar)!='':
         #     winsound.PlaySound('piano/Piano.pp.'+self.char2piano(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
 
