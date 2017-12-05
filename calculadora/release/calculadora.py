@@ -539,10 +539,10 @@ class calculadora(object):
 
         # Versión de prueba !!!
         if self.playsounds>0 and self.char2wav(enviar)!='':
-            ruta = 'wav/'
+            corto = ''
             if self.velist[self.vel]<300:
-                ruta = 'wav2/'             
-            winsound.PlaySound(ruta+self.char2wav(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
+                corto = '_'             
+            winsound.PlaySound('wav/'+self.char2wav(enviar)+corto+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
 
     def char2wav(self,c):
         r = { 'A':'1', 'B':'2', 'C':'3', 'D':'4', 'E':'5', 'G':'7', 'H':'8', 'I':'9', 'J':'0', '-':'0' }
