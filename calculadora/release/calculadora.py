@@ -87,6 +87,7 @@ class calculadora(object):
         # Debug
         self.porcionlen = 70 # Porcion a mostrar
         self.porcion = ''
+        self.playsounds = 0
         
 
         #######################################
@@ -543,11 +544,10 @@ class calculadora(object):
         # schedule timer para ayutollamarse cada segundo
         if self.vel>=0:
             self._job = self.master.after(self.velist[self.vel], self.onUpdate)
-        # winsound.Beep(frequencyHRTZ, durationMS)
-        # if self.char2htz(enviar)>0:
-        #     winsound.Beep(self.char2htz(enviar), int(self.velist[self.vel]*0.9))
-        if self.char2wav(enviar)!='':
+        if self.playsounds>0 and self.char2wav(enviar)!='':
             winsound.PlaySound('wav/'+self.char2wav(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
+        # if self.playsounds>0 and self.char2piano(enviar)!='':
+        #     winsound.PlaySound('piano/Piano.pp.'+self.char2piano(enviar)+'.wav',winsound.SND_FILENAME | winsound.SND_ASYNC)
 
     def char2wav(self,c):
         r = {
@@ -576,6 +576,36 @@ class calculadora(object):
             '8':'b1',
             '9':'c2',
             '0':''
+        }
+        return n[c]
+
+    def char2piano(self,c):
+        r = {
+            'A':'1',
+            'B':'2',
+            'C':'3',
+            'D':'4',
+            'E':'5',
+            'F':'6',
+            'G':'7',
+            'H':'8',
+            'I':'9',
+            'J':'0',
+            '-':'0'
+        }
+        if c in r.keys():
+            c = r[c]
+        n = {
+            '1':'Db3',
+            '2':'Eb3',
+            '3':'Gb3',
+            '4':'Ab3',
+            '5':'Bb3',
+            '6':'Db4',
+            '7':'Eb4',
+            '8':'Gb4',
+            '9':'Ab4',
+            '0':'Bb4'
         }
         return n[c]
 
