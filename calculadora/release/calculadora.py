@@ -9,9 +9,16 @@ from Tkinter import Tk, Label, Canvas, StringVar
 from numericStringParser import *
 import time
 import winsound
+import logging
+import datetime
 
+# Log de uso
+fecha = datetime.datetime.now()
+logfile = fecha.strftime("%y%m")+".log"
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename='log/'+logfile, level=logging.INFO)
+logging.info("INFO\tInicio de programa")
 def current_iso8601():
-    return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+    return time.strftime("%Y%m%dT%H%M%SZ", time.localtime())
 
 """
     CONTROLES ASIGNADOS:
@@ -22,19 +29,20 @@ def current_iso8601():
         |       e  => Euler                            |
         |       h  => Pi (π)                           |
         |       f  => Phi (φ)                          |
-        |       *  => Multiplicar (×)                  |
-        |       +  => Sumar                            |
-        |       -  => Restar                           |
+        |       t  => Multiplicar (×)                  |
+        |       m  => Sumar                            |
+        |       n  => Restar                           |
         |       r  => Raiz cuadrada (√)                |
         |       p  => Establecer dividendo             |
         |       q  => Establecer divisor (dividir)     |
-        |  [ENTER] => Igual a                          |
-        |        c => Reiniciar                        |
-        |        -----------------------               |
-        |        a => Avanzar (enviar a Arduino)       |
-        |        s => Stop (pausar envio a Arduino)    |
-        |        -----------------------               |
-        |        k => Salir del programa (oculto)      |
+        |       i  => Igual a                          |
+        |       x  => Backspace                        |
+        |       c  => Reiniciar                        |
+        |       -----------------------                |
+        |       a  => Avanzar (enviar a Arduino)       |
+        |       s  => Stop (pausar envio a Arduino)    |
+        |       -----------------------                |
+        |       k  => Salir del programa (oculto)      |
         |______________________________________________|
  
     INSTRUCCIONES:
@@ -105,13 +113,16 @@ class calculadora(object):
         # Debug
         self.porcionlen = 70 # Porcion a mostrar
         self.porcion = ''
-        self.playsounds = 0 # VERSION DE PRUEBA!!
+        self.playsounds = 1 # VERSION DE PRUEBA!!
 
         #Arduino COMM (Display)
         if self.sendToDisplay>0:
             # debe coincidir con los baudios y el puerto arduino
-            arduino = serial.Serial(self.ard_comm, self.ard_baud, timeout=self.ard_tiot)
-            time.sleep(0.1)
+            self.arduino = serial.Serial(self.ard_comm, self.ard_baud, timeout=self.ard_tiot)
+            time.sleep(1)
+            if self.sendToDisplay>0:
+                self.arduino.write('N') # RESET DYSPLAY
+                time.sleep(1)
 
         # nsp class
         self.nsp = NumericStringParser()
@@ -261,7 +272,7 @@ class calculadora(object):
         if c=='a': # Avanza/Acelera
             if self.vel<0 and self.resultadoAduino!='':
                 self.vel=0
-                self.calcelUpdate()
+                self.calcelUpdate('Avanzar')
                 self.onUpdate()
             elif self.vel<self.velmax:
                 self.vel = self.vel+1
@@ -273,14 +284,14 @@ class calculadora(object):
             return
 
         # IGUAL A
-        elif k==10 or k==13 or c=='=':# or k==61: # [ENTER] o [=] > Salto de línea o igual: '\n' ó '\r' ó '='
+        elif k==10 or k==13 or c=='i':# or k==61: # [ENTER] o [=] > Salto de línea o igual: '\n' ó '\r' ó '='
             # imprimir cadena RESULTADO
             self.calculadora('RESULTADO', cadena, p, q)
             return
             # return cadena,'RESULTADO'
 
         # ESCRITURA NORMAL
-        elif k == 8: # BACKSPACE
+        elif k == 8 or c=='x': # BACKSPACE
             # recortar cadena un digito
             cadena = self.modcad(cadena,1)
         elif c in numrs: # NUMEROS 0-9
@@ -314,11 +325,13 @@ class calculadora(object):
             c = '×'
             # incrementa la cadena con c
             cadena = self.modcad(cadena,str(c))
-        elif c=='+':    # + => 43
+        elif c=='+' or c=='m':    # + => 43
             # incrementa la cadena con c
+            c = '+'
             cadena = self.modcad(cadena,str(c))
-        elif c=='-':    # - => 45
+        elif c=='-' or c=='n':    # - => 45
             # incrementa la cadena con c
+            c = '-'
             cadena = self.modcad(cadena,str(c))
         elif c=='r':    # r
             # SQRT => 'r'
@@ -358,13 +371,16 @@ class calculadora(object):
 
     def calculadora(self, estado, cadena='', p='', q=''):
         if (estado=='RESULTADO'):
-            self.calcelUpdate()
+            self.calcelUpdate('Nuevo resultado')
             self.porcion = ''
             self.memvel = 0 #Memoria de la volicidad actual
             if self.vel>0:
                 self.memvel = self.vel
             self.vel = -1 # Stop timer
             self.contador = -1 # Reset timer
+            if self.sendToDisplay>0:
+                self.arduino.write('N') # RESET DYSPLAY
+                time.sleep(1)
             if (self.dondestoy=='p'):
                 p = cadena
             if (self.dondestoy=='q'):
@@ -394,7 +410,7 @@ class calculadora(object):
             self.resultado(p,q)
 
         if (estado=='REINICIAR'):
-            self.calcelUpdate()
+            self.calcelUpdate('Reiniciar')
             self.resultadoNormal = ''
             self.resultadoAduino = ''
             self.vel = -1 # Stop timer
@@ -405,9 +421,14 @@ class calculadora(object):
             self.dondestoy = 'p'
             self.labelp.config(bg="#fd0")
             self.labelq.config(bg="#eee")
+            if self.sendToDisplay>0:
+                self.arduino.write('N') # RESET DYSPLAY
+                time.sleep(1)
             # self.calculadora()
         if (estado=='SALIR'):
             self.calcelUpdate()
+            logging.info("INFO\tSalir del programa")
+            time.sleep(1)
             self.vel = -1 # Stop timer
             self.master.quit()
             # return
@@ -473,7 +494,8 @@ class calculadora(object):
 
         ################################################
         # Calcula p/q en la presición definida
-        res = self.nsp.eval('('+p+')/('+q+')')
+        equa = '('+p+')/('+q+')'
+        res = self.nsp.eval(equa)
 
         # RESULTADO COMO CADENA
         nres = ''
@@ -481,17 +503,21 @@ class calculadora(object):
         if sres == 'ERROR':
             self.resultastr = sres
             self.resulta.set(self.resultastr)
+            logging.info("ERROR\t"+equa)
             return
         # Set start envio Arduino
         self.resultadoNormal = sres
         self.resultadoAduino = self.filtrar(sres)
         self.contador = -1
         self.vel = self.memvel
+        logging.info("OK\t"+equa)
         # Inicia envío a display arduino
         self.onUpdate()
 
-    def calcelUpdate(self):
+    def calcelUpdate(self,quien=''):
         if self._job is not None:
+            if quien!='':
+                logging.info("CANCEL\t"+quien)
             self.master.after_cancel(self._job)
             self._job = None
 
@@ -529,7 +555,7 @@ class calculadora(object):
             self.resulta.set(self.resultastr)
         # ENVIO A DISPLAY
         if self.sendToDisplay>0:
-            arduino.write(enviar) # Envia digito actual a DISPLAY, la pausa la genera el unUpdate mismo
+            self.arduino.write(enviar) # Envia digito actual a DISPLAY, la pausa la genera el unUpdate mismo
         # DEBUG EN CONSOLA
         if self.debuguear>0:
             print(current_iso8601(),self.contador,self.vel,self.velist[self.vel],enviar)
@@ -549,8 +575,8 @@ class calculadora(object):
         if c in r.keys():
             c = r[c]
         n = {
-            '1':'c1', '2':'d1', '3':'e1', '4':'f1', '5':'', '6':'g1', '7':'a1', '8':'b1', '9':'c2', '0':'' # Mayor, Silencios: 0, 5
-            # '1':'c1', '2':'d1', '3':'d1s','4':'e1', '5':'f1','6':'g1','7':'a1', '8':'b1', '9':'c2', '0':'' # Mayor/Menor, Silencio: 0
+            # '1':'c1', '2':'d1', '3':'e1', '4':'f1', '5':'', '6':'g1', '7':'a1', '8':'b1', '9':'c2', '0':'' # Mayor, Silencios: 0, 5
+            '1':'c1', '2':'d1', '3':'d1s','4':'e1', '5':'f1','6':'g1','7':'a1', '8':'b1', '9':'c2', '0':'' # Mayor/Menor, Silencio: 0
         }
         return n[c]
 
