@@ -12,6 +12,8 @@ import winsound
 import logging
 import datetime
 
+import musica as mu
+
 # Log de uso
 fecha = datetime.datetime.now()
 logfile = fecha.strftime("%y%m")+".log"
@@ -135,6 +137,17 @@ class calculadora(object):
         self._job = None
 
         #######################################
+        p = mu.pyaudio.PyAudio()
+
+        self.stream = p.open(format=mu.pyaudio.paFloat32,
+                        channels=mu.CHANNELS,
+                        rate=mu.RATE,
+                        output=True,
+                        stream_callback=mu.callback)
+
+        self.stream.stop_stream()
+        #######################################
+
 
         self.master = master
         if self.fullscreen>0:
@@ -553,6 +566,25 @@ class calculadora(object):
             salida = salida+u"\nPorción: "+self.porcion.rjust(self.porcionlen, ' ').replace(' ','  ')
             self.resultastr = salida
             self.resulta.set(self.resultastr)
+        
+
+        self.stream.start_stream()
+        try:
+            nx = int(enviar)
+        except ValueError:
+            nx = -1
+            pass
+        if nx>0:
+            nx = nx-1
+        elif nx==0:
+            nx=-1
+        if nx<0:
+            mu.newfreq = 0
+        else:
+            mu.newfreq = mu.listaFreq[nx]
+        
+        
+
         # ENVIO A DISPLAY
         if self.sendToDisplay>0:
             self.arduino.write(enviar) # Envia digito actual a DISPLAY, la pausa la genera el unUpdate mismo
