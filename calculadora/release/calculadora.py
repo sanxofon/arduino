@@ -115,7 +115,8 @@ class calculadora(object):
         # Debug
         self.porcionlen = 70 # Porcion a mostrar
         self.porcion = ''
-        self.playsounds = 1 # VERSION DE PRUEBA!!
+        self.playsounds = 0 # VERSION DE PRUEBA!!
+        self.playwaves = 1 # VERSION DE PRUEBA!!
 
         #Arduino COMM (Display)
         if self.sendToDisplay>0:
@@ -137,15 +138,16 @@ class calculadora(object):
         self._job = None
 
         #######################################
-        p = mu.pyaudio.PyAudio()
+        if self.playwaves>0:
+            p = mu.pyaudio.PyAudio()
 
-        self.stream = p.open(format=mu.pyaudio.paFloat32,
-                        channels=mu.CHANNELS,
-                        rate=mu.RATE,
-                        output=True,
-                        stream_callback=mu.callback)
+            self.stream = p.open(format=mu.pyaudio.paFloat32,
+                            channels=mu.CHANNELS,
+                            rate=mu.RATE,
+                            output=True,
+                            stream_callback=mu.callback)
 
-        self.stream.stop_stream()
+            self.stream.stop_stream()
         #######################################
 
 
@@ -528,6 +530,8 @@ class calculadora(object):
         self.onUpdate()
 
     def calcelUpdate(self,quien=''):
+        if self.playwaves>0:
+            mu.newfreq = 0
         if self._job is not None:
             if quien!='':
                 logging.info("CANCEL\t"+quien)
@@ -543,6 +547,8 @@ class calculadora(object):
             self.porcion = ''
             self.contador = 0
             self.resultado(self.dividendostr, self.divisorstr)
+            if self.playwaves>0:
+                mu.newfreq = 0
             return
         if inicio<0:
             inicio=0
@@ -567,21 +573,21 @@ class calculadora(object):
             self.resultastr = salida
             self.resulta.set(self.resultastr)
         
-
-        self.stream.start_stream()
-        try:
-            nx = int(enviar)
-        except ValueError:
-            nx = -1
-            pass
-        if nx>0:
-            nx = nx-1
-        elif nx==0:
-            nx=-1
-        if nx<0:
-            mu.newfreq = 0
-        else:
-            mu.newfreq = mu.listaFreq[nx]
+        if self.playwaves>0:
+            self.stream.start_stream()
+            try:
+                nx = int(enviar)
+            except ValueError:
+                nx = -1
+                pass
+            if nx>0:
+                nx = nx-1
+            elif nx==0:
+                nx=-1
+            if nx<0:
+                mu.newfreq = 0
+            else:
+                mu.newfreq = mu.listaFreq[nx]
         
         
 
@@ -589,7 +595,7 @@ class calculadora(object):
         if self.sendToDisplay>0:
             self.arduino.write(enviar) # Envia digito actual a DISPLAY, la pausa la genera el unUpdate mismo
         # DEBUG EN CONSOLA
-        if self.debuguear>0:
+        if self.debuguear>1:
             print(current_iso8601(),self.contador,self.vel,self.velist[self.vel],enviar)
         # schedule timer para ayutollamarse cada segundo
         if self.vel>=0:
